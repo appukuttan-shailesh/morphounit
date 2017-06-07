@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import sciunit
+import sciunit.scores
 import morphounit.scores
 import morphounit.capabilities as cap
 
