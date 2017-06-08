@@ -163,7 +163,7 @@ class LayerHeightTest(sciunit.Test):
 
 class CellDensityTest(sciunit.Test):
     """Tests the cell density"""
-    score_type = scores.ZScore
+    score_type = sciunit.scores.ZScore
     id = "/tests/6?version=7"
 
     def __init__(self,
@@ -233,7 +233,7 @@ class CellDensityTest(sciunit.Test):
         """Implementation of sciunit.Test.score_prediction."""
         print "observation = ", observation
         print "prediction = ", prediction
-        score = scores.ZScore.compute(observation["density"], prediction["density"])
+        score = sciunit.scores.ZScore.compute(observation["density"], prediction["density"])
         score.description = "A simple Z-score"
 
         # create output directory
