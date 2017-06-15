@@ -40,13 +40,13 @@ class ProvidesLayerInfo(sciunit.Capability):
 class ProvidesDensityInfo(sciunit.Capability):
     """
     Indicates that the model returns morphological information, namely:
-    1) density of cells in a specfic layer of the model (1/mm3)
+    1) density of cells in a specfic layer of the model (1000/mm3)
     """
 
     def get_density_info(self):
         """
         Must return a dictionary of the form:
-            {"density": {"value": "XX 1/mm3"}}
+            {"density": {"value": "XX 1000/mm3"}}
         """
         raise NotImplementedError()
 

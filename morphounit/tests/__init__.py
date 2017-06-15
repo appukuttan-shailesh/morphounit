@@ -3,6 +3,9 @@
 from types import MethodType
 import quantities
 import os
+import matplotlib
+# Force matplotlib to not use any Xwindows backend.
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -169,11 +172,15 @@ class CellDensityTest(sciunit.Test):
     def __init__(self,
                  observation={},
                  name="Cell Density Test"):
+
+        self.k_per_mm3 = quantities.UnitQuantity(
+                    '1000/mm3', 1e3/quantities.mm**3, symbol='1000/mm3')
+        units = self.k_per_mm3
+
         observation = self.format_data(observation)
 
         required_capabilities = (cap.ProvidesDensityInfo,)
         description = ("Tests the cell density within a single layer of model")
-        units = quantities.mm**-3
 
         self.figures = []
         sciunit.Test.__init__(self, observation, name)
@@ -186,25 +193,22 @@ class CellDensityTest(sciunit.Test):
         """
         This accepts data input in the form:
         ***** (observation) *****
-        {"density": {"mean": "XX 1/mm3", "std": "YY 1/mm3"}}
+        {"density": {"mean": "XX 1000/mm3", "std": "YY 1000/mm3"}}
         ***** (prediction) *****
-        {"density": {"value": "ZZ 1/mm3"}}
+        {"density": {"value": "ZZ 1000/mm3"}}
 
         It splits the values of mean, std, value to numeric quantities
         and their units (via quantities package).
         """
         for key,val in data["density"].items():
             try:
-                data["density"][key] = int(val)
+                quantity_parts = val.split(" ")
+                number = float(quantity_parts[0])
+                units = " ".join(quantity_parts[1:])
+                if units == "1000/mm3":
+                    data["density"][key] = quantities.Quantity(number, self.k_per_mm3)
             except ValueError:
-                try:
-                    data["density"][key] = float(val)
-                except ValueError:
-                    quantity_parts = val.split(" ")
-                    number = float(quantity_parts[0])
-                    units = " ".join(quantity_parts[1:])
-                    data["density"][key] = quantities.Quantity(number, units)
-
+                raise sciunit.Error("Values not in appropriate format. Required units: 1000/mm3")
         return data
 
     #----------------------------------------------------------------------
@@ -216,7 +220,7 @@ class CellDensityTest(sciunit.Test):
         except Exception as e:
             raise sciunit.ObservationError(
                 ("Observation must return a dictionary of the form:"
-                 "{'density': {'mean': 'XX 1/mm**3', 'std': 'YY 1/mm**3'}}"))
+                 "{'density': {'mean': 'XX 1000/mm3', 'std': 'YY 1000/mm3'}}"))
 
     #----------------------------------------------------------------------
 
