@@ -304,7 +304,7 @@ class NeuroM_SomaDiamTest_MeanSD(sciunit.Test):
     Compares against Mean, SD; evaluates Z-Score
     """
     score_type = sciunit.scores.ZScore
-    id = "/tests/8?version=1"   # update version
+    id = "/tests/8?version=10"   # update version
 
     def __init__(self,
                  observation={},
@@ -352,20 +352,20 @@ class NeuroM_SomaDiamTest_MeanSD(sciunit.Test):
         except Exception as e:
             raise sciunit.ObservationError(
                 ("Observation must return a dictionary of the form:"
-                {'diameter': {'mean': 'X0 um', 'std': '2.5 um'}}))"))
+                 "{'diameter': {'mean': 'XX um', 'std': 'YY um'}}"))
 
     #----------------------------------------------------------------------
 
     def generate_prediction(self, model, verbose=False):
         """Implementation of sciunit.Test.generate_prediction."""
         self.model_name = model.name
-        prediction = model.get_layer_info()
+        prediction = model.get_soma_diameter_info()
         prediction = self.format_data(prediction)
         return prediction
 
     #----------------------------------------------------------------------
 
-def compute_score(self, observation, prediction, verbose=False):
+    def compute_score(self, observation, prediction, verbose=False):
         """Implementation of sciunit.Test.score_prediction."""
         print "observation = ", observation
         print "prediction = ", prediction
