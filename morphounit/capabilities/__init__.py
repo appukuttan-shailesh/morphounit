@@ -22,11 +22,13 @@ class ProvidesLayerInfo(sciunit.Capability):
         """
         raise NotImplementedError()
 
+    # not used currently
     def get_num_layers(self):
         """ returns the # of layers in model """
         layer_info = self.get_layer_info()
         return len(layer_info)
 
+    # not used currently
     def get_layer_height(self, layer_name):
         """ should return the height of specified layer """
         layer_info = self.get_layer_info()
@@ -50,9 +52,24 @@ class ProvidesDensityInfo(sciunit.Capability):
         """
         raise NotImplementedError()
 
+    # not used currently
     def get_cell_density(self):
         """ returns the cell density in model """
         density_info = self.get_density_info()
         return density_info["density"]["value"]
+
+#==============================================================================
+
+class HandlesNeuroM(sciunit.Capability):
+    """
+    Generic capability for handling morphologies loaded via NeuroM
+    """
+
+    def get_soma_diameter_info(self):
+        """
+        Must return a dictionary of the form:
+            {"diameter": {"value": "XX um"}}
+        """
+        raise NotImplementedError()
 
 #==============================================================================
