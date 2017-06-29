@@ -5,7 +5,7 @@ except ImportError:
 
 setup(
     name='morphounit',
-    version='0.1',
+    version='0.1.1',
     author='Shailesh Appukuttan',
     author_email='shailesh.appukuttan@unic.cnrs-gif.fr',
     packages=['morphounit',
