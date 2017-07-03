@@ -5,14 +5,15 @@ except ImportError:
 
 setup(
     name='morphounit',
-    version='0.1.1',
+    version='0.2',
     author='Shailesh Appukuttan',
     author_email='shailesh.appukuttan@unic.cnrs-gif.fr',
     packages=['morphounit',
               'morphounit.capabilities',
-              'morphounit.tests'],
+              'morphounit.tests',
+              'morphounit.scores'],
     url='https://github.com/appukuttan-shailesh/morphounit',
-    download_url = 'https://github.com/appukuttan-shailesh/morphounit/archive/0.1.tar.gz', 
+    download_url = 'https://github.com/appukuttan-shailesh/morphounit/archive/0.2.tar.gz', 
     keywords = ['morphology', 'structure', 'circuit', 'testing', 'validation framework'],
     license='MIT',
     description='A SciUnit library for data-driven testing of neuronal morphologies.',
