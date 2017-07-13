@@ -1,15 +1,16 @@
-import quantities
-import os
-import matplotlib
-
-# Force matplotlib to not use any Xwindows backend.
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import numpy as np
-
 import sciunit
 import sciunit.scores
 import morphounit.capabilities as cap
+
+import quantities
+import os
+
+import matplotlib
+# Force matplotlib to not use any Xwindows backend.
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
+#==============================================================================
 
 import neurom as nm
 
