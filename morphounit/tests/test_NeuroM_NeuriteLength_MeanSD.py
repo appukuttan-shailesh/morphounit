@@ -12,12 +12,12 @@ import matplotlib.pyplot as plt
 
 #==============================================================================
 
-import neurom as nm
-
 class NeuriteLengthTest(sciunit.Test):
     """Tests a neurite length"""
     score_type = sciunit.scores.ZScore
     units = None
+    id = "/tests/9?version=1"
+
     def __init__(self, observation={}, name="Neurite length test"):
 
         description = ("Tests the neurite length of a digitally reconstructed neuron")
