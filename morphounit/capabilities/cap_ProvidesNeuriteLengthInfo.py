@@ -1,3 +1,7 @@
+import sciunit
+
+#==============================================================================
+
 class ProvidesNeuriteLengthInfo(sciunit.Capability):
     """
     Indicates that the model returns morphological information, namely:
