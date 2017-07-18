@@ -83,7 +83,7 @@ class NeuriteLengthTest(sciunit.Test):
         """Implementation of sciunit.Test.score_prediction"""
         print "observation = ", observation
         print "prediction = ", prediction
-        score = sciunit.scores.ZScore.compute(observation['NeuriteLength'], prediction[''])
+        score = sciunit.scores.ZScore.compute(observation['NeuriteLength'], prediction['NeuriteLength'])
         score.description = "A simple Z-score"
 
         # create output directory
