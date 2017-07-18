@@ -21,8 +21,9 @@ class NeuriteLengthTest(sciunit.Test):
 
         description = ("Tests the neurite length of a digitally reconstructed neuron")
         require_capabilities = (cap.ProvidesNeuriteLengthInfo,)
-
         units = quantities.um
+
+        self.figures = []
         observation = self.format_data(observation)
         sciunit.Test.__init__(self, observation, name)
         self.directory_output = './output/'
