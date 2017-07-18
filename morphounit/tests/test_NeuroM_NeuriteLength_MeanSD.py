@@ -45,6 +45,7 @@ class NeuriteLengthTest(sciunit.Test):
                 try:
                     quantity_parts = val.split()
                     number, units_str = float(quantity_parts[0]), " ".join(quantity_parts[1:])
+                    print units_str
                     assert (units_str == 'um')
                     data[key0][key] = quantities.Quantity(number, units_str)
                 except:
@@ -74,6 +75,7 @@ class NeuriteLengthTest(sciunit.Test):
         """
         self.model_name = model.name
         prediction = model.get_NeuriteLength_info()
+        print prediction
         prediction = self.format_data(prediction)
         return prediction
 
@@ -83,7 +85,7 @@ class NeuriteLengthTest(sciunit.Test):
         """Implementation of sciunit.Test.score_prediction"""
         print "observation = ", observation
         print "prediction = ", prediction
-        score = sciunit.scores.ZScore.compute(observation['NeuriteLength'], prediction['NeuriteLength'])
+        score = sciunit.scores.ZScore.compute(observation['NeuriteLength']['mean'], prediction['NeuriteLength']['mean'])
         score.description = "A simple Z-score"
 
         # create output directory
