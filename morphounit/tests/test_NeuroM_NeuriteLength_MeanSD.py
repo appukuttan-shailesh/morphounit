@@ -129,7 +129,7 @@ class NeuriteLengthTest(sciunit.Test):
         o_mean = observation["NeuriteLength"]["mean"]
         o_std = observation["NeuriteLength"]["std"]
         p_value = prediction["NeuriteLength"]["value"]
-        dataFile.write("%s\t%s\t%s\t%s\t%s\n" % (key0, o_mean, o_std, p_value, score))
+        dataFile.write("%s\t%s\t%s\t%s\t%s\n" % ("NeuriteLength", o_mean, o_std, p_value, score))
         dataFile.write("------------------------------------------------------------------------------\n")
         dataFile.write("Final Score: %s\n" % score)
         dataFile.write("==============================================================================\n")
