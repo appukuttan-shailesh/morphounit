@@ -15,15 +15,14 @@ import matplotlib.pyplot as plt
 class NeuriteLengthTest(sciunit.Test):
     """Tests a neurite length"""
     score_type = sciunit.scores.ZScore
-    units = None
     id = "/tests/9?version=12"
 
     def __init__(self, observation={}, name="Neurite length test"):
 
         description = ("Tests the neurite length of a digitally reconstructed neuron")
         require_capabilities = (ProvidesNeuriteLengthInfo,)
-        NeuriteLengthTest.units = quantities.um
 
+        units = quantities.um
         observation = self.format_data(observation)
         sciunit.Test.__init__(self, observation, name)
         self.directory_output = './output/'
@@ -46,10 +45,10 @@ class NeuriteLengthTest(sciunit.Test):
                 try:
                     quantity_parts = val.split()
                     number, units_str = float(quantity_parts[0]), " ".join(quantity_parts[1:])
-                    assert (units_str == NeuriteLengthTest.units.units)
+                    assert (units_str == 'um')
                     data[key0][key] = quantities.Quantity(number, units_str)
                 except:
-                    raise sciunit.Error("Values not in appropriate format. Required units: " + NeuriteLengthTest.units)
+                    raise sciunit.Error("Values not in appropriate format. Required units: um")
         return data
 
     # ----------------------------------------------------------------------
