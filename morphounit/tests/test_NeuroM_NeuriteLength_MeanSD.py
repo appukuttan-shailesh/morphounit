@@ -20,7 +20,7 @@ class NeuriteLengthTest(sciunit.Test):
     def __init__(self, observation={}, name="Neurite length test"):
 
         description = ("Tests the neurite length of a digitally reconstructed neuron")
-        require_capabilities = (ProvidesNeuriteLengthInfo,)
+        require_capabilities = (cap.ProvidesNeuriteLengthInfo,)
 
         units = quantities.um
         observation = self.format_data(observation)
