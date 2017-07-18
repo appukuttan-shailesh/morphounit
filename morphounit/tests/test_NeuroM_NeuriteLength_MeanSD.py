@@ -16,7 +16,7 @@ class NeuriteLengthTest(sciunit.Test):
     """Tests a neurite length"""
     score_type = sciunit.scores.ZScore
     units = None
-    id = "/tests/9?version=1"
+    id = "/tests/9?version=12"
 
     def __init__(self, observation={}, name="Neurite length test"):
 
