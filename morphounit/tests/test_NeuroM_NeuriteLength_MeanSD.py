@@ -138,4 +138,8 @@ class NeuriteLengthTest(sciunit.Test):
 
         return score
 
-#==============================================================================
+    #----------------------------------------------------------------------
+
+    def bind_score(self, score, model, observation, prediction):
+        score.related_data["figures"] = self.figures
+        return score
