@@ -5,13 +5,14 @@ except ImportError:
 
 setup(
     name='morphounit',
-    version='0.2',
+    version='0.3',
     author='Shailesh Appukuttan',
     author_email='shailesh.appukuttan@unic.cnrs-gif.fr',
     packages=['morphounit',
               'morphounit.capabilities',
               'morphounit.tests',
-              'morphounit.scores'],
+              'morphounit.scores',
+              'morphounit.plots'],
     url='https://github.com/appukuttan-shailesh/morphounit',
     download_url = 'https://github.com/appukuttan-shailesh/morphounit/archive/0.2.tar.gz', 
     keywords = ['morphology', 'structure', 'circuit', 'testing', 'validation framework'],
