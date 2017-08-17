@@ -21,7 +21,7 @@ class ProvidesCA1NeuritePathDistanceInfo(sciunit.Capability):
         raise NotImplementedError()
 
     def get_CA1LayersNeuritePathDistance(self):
-        """ returns a list with the neurite path distance of a reconstructed neuron 
+        """ Returns a list with the neurite path distance of a reconstructed neuron 
 	    across the four layers of CA1 subregion of Hippocampus: SLM, SR, SP and SO	        
 	"""
         CA1LayersNeuritePathDistance_info = self.get_CA1LayersNeuritePathDistance_info()
