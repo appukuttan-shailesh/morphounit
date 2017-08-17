@@ -46,10 +46,12 @@ class NeuriteLengthTest(sciunit.Test):
                 try:
                     quantity_parts = val.split()
                     number, units_str = float(quantity_parts[0]), " ".join(quantity_parts[1:])
-                    assert (units_str == 'um')
-                    data[key0][key] = quantities.Quantity(number, units_str)
+		    assert (units_str == self.units.symbol)
+                    data[key0][key] = quantities.Quantity(number, self.units)
+                except AssertionError:
+                    raise sciunit.Error("Values not in appropriate format. Required units: ", self.units.symbol)
                 except:
-                    raise sciunit.Error("Values not in appropriate format. Required units: um")
+                    raise sciunit.Error("Values not in appropriate format.")
         return data
 
     # ----------------------------------------------------------------------
@@ -67,12 +69,6 @@ class NeuriteLengthTest(sciunit.Test):
 
     def generate_prediction(self, model, verbose=False):
         """Implementation of sciunit.Test.generate_prediction"""
-        """
-        nrn = nm.load_neuron('../corrected/fs-corrected3/030225-5-PV-rep-cor.swc')
-        nrn_ap_seg_len = nm.get('neurite_lengths', nrn, neurite_type=nm.APICAL_DENDRITE)
-
-        return features_names, features_list
-        """
         self.model_name = model.name
         prediction = model.get_NeuriteLength_info()
         prediction = self.format_data(prediction)
