@@ -53,12 +53,12 @@ class CA1NeuritePathDistanceTest(sciunit.Test):
         and their units (via quantities package)
         """
         for key0 in data.keys():
-	       for key, val in data[key0]['PathDistance'].items():
+	       for key, val in data[key0]["PathDistance"].items():
 		  try:
 		     quantity_parts = val.split()
 		     number, units_str = float(quantity_parts[0]), " ".join(quantity_parts[1:])
 		     assert (units_str == self.units.symbol)		     
-		     data[key0]['PathDistance'][key] = quantities.Quantity(number, self.units)
+		     data[key0]["PathDistance"][key] = quantities.Quantity(number, self.units)
                   except AssertionError:
                      raise sciunit.Error("Values not in appropriate format. Required units: ", self.units.symbol)
                   except:
@@ -101,59 +101,16 @@ class CA1NeuritePathDistanceTest(sciunit.Test):
         print "prediction = ", prediction
 
         zscores = {}
-        for key0 in data.keys():
-	   for key1 in data[key0].keys():
-		score = sciunit.scores.ZScore.compute(observation[key0][key1], prediction[key0][key1])
-        	score.description = "A simple Z-score"
+        for key0 in observation.keys():
+            zscores[key0] = sciunit.scores.ZScore.compute(observation[key0]["PathDistance"], prediction[key0]["PathDistance"])
+        self.score = morphounit.scores.CombineZScores.compute(zscores.values())
 
         # create output directory
         path_test_output = self.directory_output + 'neurite_PathDistance/' + self.model_name + '/'
         if not os.path.exists(path_test_output):
             os.makedirs(path_test_output)
 
-        # save figure with mean, std, value for observation and prediction
-        fig = plt.figure()
-        x = range(len(observation)) ## = 1
-        ix = 0
 
-        y_mean = observation["NeuriteLength"]["mean"]
-        y_std = observation["NeuriteLength"]["std"]
-        y_value = prediction["NeuriteLength"]["value"]
-        ax_o = plt.errorbar(ix, y_mean, yerr=y_std, ecolor='black', elinewidth=2,
-                        capsize=5, capthick=2, fmt='ob', markersize='5', mew=5)
-        ax_p = plt.plot(ix, y_value, 'rx', markersize='8', mew=2)
-
-        ix = ix + 1
-        xlabels = 'NeuriteLength' # observation.keys()
-        plt.xticks(x, xlabels, rotation=20)
-        plt.tick_params(labelsize=11)
-        plt.figlegend((ax_o,ax_p[0]), ('Observation', 'Prediction',), 'upper right')
-        plt.margins(0.1)
-        plt.ylabel("Neurite Length (um)")
-        fig = plt.gcf()
-        fig.set_size_inches(8, 6)
-        filename = path_test_output + 'data_plot' + '.pdf'
-        plt.savefig(filename, dpi=600,)
-        self.figures.append(filename)
-
-        # save document with Z-score data
-        filename = path_test_output + 'score_summary' + '.txt'
-        dataFile = open(filename, 'w')
-        dataFile.write("==============================================================================\n")
-        dataFile.write("Test Name: %s\n" % self.name)
-        dataFile.write("Model Name: %s\n" % self.model_name)
-        dataFile.write("------------------------------------------------------------------------------\n")
-        dataFile.write("Parameter #\tExpt. mean\tExpt. std\tModel value\tZ-score\n")
-        dataFile.write("..............................................................................\n")
-        o_mean = observation["NeuriteLength"]["mean"]
-        o_std = observation["NeuriteLength"]["std"]
-        p_value = prediction["NeuriteLength"]["value"]
-        dataFile.write("%s\t%s\t%s\t%s\t%s\n" % ("NeuriteLength", o_mean, o_std, p_value, score))
-        dataFile.write("------------------------------------------------------------------------------\n")
-        dataFile.write("Final Score: %s\n" % score)
-        dataFile.write("==============================================================================\n")
-        dataFile.close()
-        self.figures.append(filename)
 
         return score
 
