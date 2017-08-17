@@ -36,7 +36,7 @@ class NeuriteLengthTest(sciunit.Test):
         ***** (observation) *****
         { 'NeuriteLength': {'mean': 'XX um', 'std': 'YY um'} }
         ***** (prediction) *****
-        { 'NeuriteLength': {'mean': 'XX um'} }
+        { 'NeuriteLength': {'value': 'XX um'} }
 
         It splits the values of mean, std and value to numeric quantities
         and their units (via quantities package)
