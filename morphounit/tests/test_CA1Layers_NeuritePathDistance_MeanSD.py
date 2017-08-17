@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 #==============================================================================
 
 
-class NeuriteLengthTest(sciunit.Test):
+class CA1NeuritePathDistanceTest(sciunit.Test):
     """Tests a neurite path-distance across the layers of Hippocampus CA1"""
     score_type = sciunit.scores.ZScore
     id = "/tests/9?version=12"
