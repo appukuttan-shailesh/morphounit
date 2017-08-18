@@ -102,15 +102,34 @@ class CA1NeuritePathDistanceTest(sciunit.Test):
 
         zscores = {}
         for key0 in observation.keys():
-            zscores[key0] = sciunit.scores.ZScore.compute(observation[key0]["PathDistance"], prediction[key0]["PathDistance"])
-        self.score = morphounit.scores.CombineZScores.compute(zscores.values())
+           zscores[key0] = sciunit.scores.ZScore.compute(observation[key0]["PathDistance"], prediction[key0]["PathDistance"])
+        # self.score = morphounit.scores.CombineZScores.compute(zscores.values())
 
         # create output directory
         path_test_output = self.directory_output + 'neurite_PathDistance/' + self.model_name + '/'
         if not os.path.exists(path_test_output):
-            os.makedirs(path_test_output)
+           os.makedirs(path_test_output)
 
-        # save document with Z-score data
+        # save figure with Z-score data
+        for key0 in observation.keys():
+	   score_lf[key0] = float(str(zscores[key0]).split()[2])
+
+	layers = range(len(observation))
+	width = 0.35
+	plt.bar(layers, score_lf, width, color='blue')
+	plt.figlegend(ax_score, ('Z-Score',), 'upper right')
+	plt.ylabel("Score value")
+
+	frame_bars = plt.gca()
+	frame_bars.axes.get_xaxis().set_visible(False)
+
+	fig_bars = plt.gcf()
+	fig_bars.set_size_inches(8, 6)
+
+        filename = path_test_output + 'score_plot' + '.pdf'
+        plt.savefig(filename, dpi=600,)
+        self.figures.append(filename)
+
 
         return score
 
