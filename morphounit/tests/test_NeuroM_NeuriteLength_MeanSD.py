@@ -122,7 +122,7 @@ class NeuriteLengthTest(sciunit.Test):
 	width = 0.35
 	ax_score = ax.bar(ind, score, width, color='blue')
 
-        plt.figlegend(ax_score[0], ('Z-Score',)), 'upper right')
+        plt.figlegend(ax_score[0], ('Z-Score',), 'upper right')
         plt.ylabel("Score value")
 	fig_bars = plt.gcf()
         fig_bars.set_size_inches(8, 6)
