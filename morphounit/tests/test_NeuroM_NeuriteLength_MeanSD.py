@@ -124,8 +124,8 @@ class NeuriteLengthTest(sciunit.Test):
 
         plt.figlegend(ax_score[0], ('Z-Score',)), 'upper right')
         plt.ylabel("Score value")
-	fig = plt.gcf()
-        fig.set_size_inches(8, 6)
+	fig_bars = plt.gcf()
+        fig_bars.set_size_inches(8, 6)
         filename = path_test_output + 'score_plot' + '.pdf'
         plt.savefig(filename, dpi=600,)
         self.figures.append(filename)
