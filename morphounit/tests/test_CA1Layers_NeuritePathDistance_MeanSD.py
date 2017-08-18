@@ -110,7 +110,7 @@ class CA1NeuritePathDistanceTest(sciunit.Test):
         if not os.path.exists(path_test_output):
             os.makedirs(path_test_output)
 
-
+        # save document with Z-score data
 
         return score
 
