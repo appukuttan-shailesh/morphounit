@@ -116,11 +116,12 @@ class NeuriteLengthTest(sciunit.Test):
 
         # save figure with Z-score data
 	fig_bars = plt.figure()
-	ax = fig_bars.add_subplot(111)
+	# ax = fig_bars.add_subplot(111)
 	
 	ind = len(observation) ## = 1
 	width = 0.35
-	ax_score = ax.bar(ind, score, width, color='blue')
+	score_lf = float(str(score).split()[2])
+	ax_score = ax.bar(ind, score_lf, width, color='blue')
 
         plt.figlegend(ax_score[0], ('Z-Score',), 'upper right')
         plt.ylabel("Score value")
