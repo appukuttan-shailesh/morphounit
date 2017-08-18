@@ -113,6 +113,24 @@ class NeuriteLengthTest(sciunit.Test):
         plt.savefig(filename, dpi=600,)
         self.figures.append(filename)
 
+
+        # save figure with Z-score data
+	fig_bars = plt.figure()
+	ax = fig_bars.add_subplot(111)
+	
+	ind = len(observation) ## = 1
+	width = 0.35
+	ax_score = ax.bar(ind, score, width, color='blue')
+
+        plt.figlegend(ax_score[0], ('Z-Score',)), 'upper right')
+        plt.ylabel("Score value")
+	fig = plt.gcf()
+        fig.set_size_inches(8, 6)
+        filename = path_test_output + 'score_plot' + '.pdf'
+        plt.savefig(filename, dpi=600,)
+        self.figures.append(filename)
+
+
         # save document with Z-score data
         filename = path_test_output + 'score_summary' + '.txt'
         dataFile = open(filename, 'w')
