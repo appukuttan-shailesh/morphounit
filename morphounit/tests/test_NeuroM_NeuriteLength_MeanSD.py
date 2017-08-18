@@ -131,7 +131,7 @@ class NeuriteLengthTest(sciunit.Test):
 	fig_bars.set_size_inches(8, 6)
 
         filename = path_test_output + 'score_plot' + '.pdf'
-        fig_bars.savefig(filename, dpi=600,)
+        plt.savefig(filename, dpi=600,)
         self.figures.append(filename)
 
 
