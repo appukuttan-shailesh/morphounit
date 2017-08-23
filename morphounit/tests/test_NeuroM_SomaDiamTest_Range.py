@@ -105,12 +105,10 @@ class NeuroM_SomaDiamTest_Range(sciunit.Test):
         err_plot.ylabel = "Diameter (um)"
         file1 = err_plot.create()
         self.figures.append(file1)
-        """
         # 2. Text Table
         txt_table = plots.TxtTable(self)
         file2 = txt_table.create()
         self.figures.append(file2)
-        """
 
         return self.score
 
