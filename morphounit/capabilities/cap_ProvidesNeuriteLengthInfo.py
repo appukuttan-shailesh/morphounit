@@ -19,4 +19,3 @@ class ProvidesNeuriteLengthInfo(sciunit.Capability):
         """ returns the neurite length in a model of a reconstructed neuron """
         NeuriteLength_info = self.get_NeuriteLength_info()
         return NeuriteLength_info['NeuriteLength']['value']
-
