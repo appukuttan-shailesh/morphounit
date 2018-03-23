@@ -19,7 +19,7 @@ class morph_feature_Test(sciunit.Test):
 
     def __init__(self, observation={}, name="Neurite's morpho-feature test"):
 
-        description = ("Tests a set of neurite's morpho-features in a digitally reconstructed neuron")
+        description = "Tests a set of neurite's morpho-features in a digitally reconstructed neuron"
         require_capabilities = (mph_cap.ProvidesMorphFeatureInfo,)
 
         self.units = quantities.um
