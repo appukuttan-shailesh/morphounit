@@ -22,7 +22,6 @@ class morph_feature_Test(sciunit.Test):
         description = "Tests a set of neurite's morpho-features in a digitally reconstructed neuron"
         require_capabilities = (mph_cap.ProvidesMorphFeatureInfo,)
 
-        self.units = quantities.um
         self.figures = []
         observation = self.format_data(observation)
         sciunit.Test.__init__(self, observation, name)
@@ -34,43 +33,64 @@ class morph_feature_Test(sciunit.Test):
         """
         This accepts data input in the form:
         ***** (observation) *****
-        { 'NeuriteLength': {'mean': 'XX um', 'std': 'YY um'} }
+        {"cell_kind": { "morph_feature_name_1": { "value": "X1_mean units_str", "std": "X1_std units_str" },
+                        "morph_feature_name_2": { "value": "X2_mean units_str", "std": "X2_std units_str" },
+                      ...
+                      }
+        }
         ***** (prediction) *****
-        { 'NeuriteLength': {'value': 'XX um'} }
+        {'cell_name': { "morph_feature_name_1": {"value": ["X11_value units_str", "X12_value units_str", ...] },
+                        "morph_feature_name_2": {"value": ["X21_value units_str", "X22_value units_str", ...] },
+                        ...
+                      }
+        }
 
         It splits the values of mean, std and value to numeric quantities
         and their units (via quantities package)
         """
+
         for key0 in data.keys():
             for key, val in data[key0].items():
                 try:
                     quantity_parts = val.split()
                     number, units_str = float(quantity_parts[0]), " ".join(quantity_parts[1:])
-		    assert (units_str == self.units.symbol)
-                    data[key0][key] = quantities.Quantity(number, self.units)
-                except AssertionError:
-                    raise sciunit.Error("Values not in appropriate format. Required units: ", self.units.symbol)
-                except:
-                    raise sciunit.Error("Values not in appropriate format.")
+                    if key in ["soma diameter",
+                               "dendritic X extent", "dendritic Y extent", "dendritic Z extent",
+                               "dendritic field diameter", "total dendritic length",
+                               "axonal X extent", "axonal Y extent", "axonal Z extent",
+                               "axonal field diameter", "total axonal length"]:
+                        assert (units_str==quantities.um), \
+                            sciunit.Error("Values not in appropriate format. Required units: ", quantities.um)
+                    elif key in ["number of primary dendrites", "number of axons", "max branch order"]:
+                        assert(units_str==quantities.dimensionless), \
+                            sciunit.Error("Values not in appropriate format. Required units: ", quantities.dimensionless)
+                finally:
+                    data[key0][key] = quantities.Quantity(number, units_str)
+
         return data
 
     # ----------------------------------------------------------------------
 
     def validate_observation(self, observation):
         for key0 in observation.keys():
-            for val1 in observation[key0].values():
-                try:
-                    assert type(val1) is quantities.Quantity
-                except Exception as e:
-                    raise sciunit.ObservationError(("Observation must be of the form "
-                                                    "{'mean': XX um,'std': YY um}"))
+            for val in observation[key0].values():
+                assert type(val) is quantities.Quantity, \
+                        raise sciunit.ObservationError(("Observation must be of the form "
+                                                        "{'mean': 'XX units_str','std': 'YY units_str'}"))
 
     #----------------------------------------------------------------------
 
     def generate_prediction(self, model, verbose=False):
         """Implementation of sciunit.Test.generate_prediction"""
         self.model_name = model.name
-        prediction = model.get_NeuriteLength_info()
+        prediction = model.get_morph_feature_info()
+
+        for key0 in prediction.morph_feature_info().keys():
+            for key, val in prediction.morph_feature_info()[key0].items():
+                if len(val)>1:
+                    prediction.morph_feature_info()[key0][key] = mean(val)
+
+
         prediction = self.format_data(prediction)
         return prediction
 
@@ -116,19 +136,19 @@ class morph_feature_Test(sciunit.Test):
 
         # save figure with Z-score data
 	ind = len(observation) ## = 1
-	width = 0.35
-	score_lf = float(str(score).split()[2])
+    width = 0.35
+    score_lf = float(str(score).split()[2])
 
-	plt.bar(ind, score_lf, width, color='blue')
-	plt.xlim(0, 4)
-	plt.figlegend(ax_score, ('Z-Score',), 'upper right')
-	plt.ylabel("Score value")
+    plt.bar(ind, score_lf, width, color='blue')
+    plt.xlim(0, 4)
+    plt.figlegend(ax_score, ('Z-Score',), 'upper right')
+    plt.ylabel("Score value")
 
-	frame_bars = plt.gca()
-	frame_bars.axes.get_xaxis().set_visible(False)
+    frame_bars = plt.gca()
+    frame_bars.axes.get_xaxis().set_visible(False)
 
-	fig_bars = plt.gcf()
-	fig_bars.set_size_inches(8, 6)
+    fig_bars = plt.gcf()
+    fig_bars.set_size_inches(8, 6)
 
         filename = path_test_output + 'score_plot' + '.pdf'
         plt.savefig(filename, dpi=600,)

@@ -11,8 +11,8 @@ class ProvidesMorphFeatureInfo(sciunit.Capability):
     def get_morph_feature_info(self):
         """
         Must return a dictionary of the form:
-        {'cell_name': { 'morph_feature_name_1': {'value': ['X0_1 some_unit', 'X0_2 some_unit', ...] },
-                        'morph_feature_name_2': {'value': ['X1_1 some_unit', 'X1_2 some_unit', ...] },
+        {'cell_name': { "morph_feature_name_1": {"value": ["X11_value units_str", "X12_value units_str", ...] },
+                        "morph_feature_name_2": {"value": ["X21_value units_str", "X22_value units_str", ...] },
                         ...
                       }
         }
