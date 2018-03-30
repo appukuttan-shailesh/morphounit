@@ -11,11 +11,21 @@ class ProvidesMorphFeatureInfo(sciunit.Capability):
     def get_morph_feature_info(self):
         """
         Must return a dictionary of the form:
-        {'cell_name': { "morph_feature_name_1": {"value": ["X11_value units_str", "X12_value units_str", ...] },
-                        "morph_feature_name_2": {"value": ["X21_value units_str", "X22_value units_str", ...] },
-                        ...
-                      }
-        }
+        {"cell1_ID": { 'cell_part_1': {'morph_feature_name_11': {'value': 'X11 units_str'},
+                                       'morph_feature_name_12': {'value': 'X12 units_str'},
+                                        ... },
+                       'cell_part_2': {'morph_feature_name_21': {'value': 'X21 units_str'},
+                                       'morph_feature_name_22': {'value': 'X22 units_str'},
+                                        ... },
+                       ... }
+         "cell2_ID": { 'cell_part_1': {'morph_feature_name_11': {'value': 'Y11 units_str'},
+                                       'morph_feature_name_12': {'value': 'Y12 units_str'},
+                                        ... },
+                       'cell_part_2': {'morph_feature_name_21': {'value': 'Y21 units_str'},
+                                       'morph_feature_name_22': {'value': 'Y22 units_str'},
+                                        ... },
+                       ... }
+        ... }
         """
         raise NotImplementedError()
 
