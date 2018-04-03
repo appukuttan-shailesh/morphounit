@@ -1,5 +1,6 @@
 import sciunit
 import sciunit.scores as sci_scores
+import morphounit.scores as mph_scores
 import morphounit.capabilities as mph_cap
 
 import numpy as np
@@ -15,12 +16,12 @@ import matplotlib.pyplot as plt
 
 class morph_feature_Test(sciunit.Test):
     """Tests a set of neurite's morphological features"""
-    score_type = sciunit.scores.ZScore
+    score_type = sci_scores.ZScore
     id = "/tests/9?version=12"
 
-    def __init__(self, observation={}, name="Neurite's morpho-feature test"):
+    def __init__(self, observation={}, name="Cell's morpho-feature test"):
 
-        description = "Tests a set of neurite's morpho-features in a digitally reconstructed neuron"
+        description = "Tests a set of Cell's morpho-features in a digitally reconstructed neuron"
         require_capabilities = (mph_cap.ProvidesMorphFeatureInfo,)
 
         self.figures = []
@@ -65,7 +66,7 @@ class morph_feature_Test(sciunit.Test):
         dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
         dim_non = ['order', 'number'']
         for key0 in data.keys():  # Cell ID
-            for key, val in data[key0].items(): # Dict. with cell's part-feature dictionary pairs for each cell
+            for key, val in data[key0].items():  # Dict. with cell's part-feature dictionary pairs for each cell
                 try:
                     quantity_parts = val.split()
                     number, units_str = float(quantity_parts[0]), " ".join(quantity_parts[1:])
@@ -106,18 +107,22 @@ class morph_feature_Test(sciunit.Test):
 
     def compute_score(self, observation, prediction, verbose=True):
         """Implementation of sciunit.Test.score_prediction"""
+        score.description = "A simple Z-score"
+
         print "observation = ", observation
         print "prediction = ", prediction
-
         # Computing the scores
         scores_feature_dict = prediction.copy()
-        for dict1 in scores_feature_dict.values():  # Dict. with cell's part-features dictionary pairs for each cell
-            for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part:
-                                          # soma, apical_dendrite, basal_dendrite or axon
-                for key, val in dict2.items():
-                    dict2[key] = sci_scores.ZScore.compute(observation,prediction=val)
 
-        score.description = "A simple Z-score"
+        for key0 in scores_feature_dict.keys():  # cell ID (in prediction) or cell_kind (in observation)
+            for key1 in scores_feature_dict[key0].keys(): # Dict. with cell's part-feature dictionary pairs for each cell
+                for key2 in scores_feature_dict.keys(): # Dict. with feature name-value pairs for each cell part:
+                                                        # soma, axon, apical_dendrite or basal_dendrite
+                    scores_feature_dict[key0][key1][key2] = sci_scores.ZScore.compute(observation[key0][key1][key2],
+
+        print "scores_feature_dict = ", scores_feature_dict                                                                                      prediction[key0][key1][key2])
+        # self.score = mph_scores.CombineZScores.compute(zscores.values())
+        self.score = scores_feature_dict[key0][key1][key2]
 
         # create output directory
         path_test_output = self.directory_output + self.model_name + '/'
@@ -126,9 +131,9 @@ class morph_feature_Test(sciunit.Test):
 
         # save figure with mean, std, value for observation and prediction
         fig = plt.figure()
-        x = range(len(observation)) ## = 1
+        x = range(len(observation))
         ix = 0
-
+        '''
         y_mean = observation["NeuriteLength"]["mean"]
         y_std = observation["NeuriteLength"]["std"]
         y_value = prediction["NeuriteLength"]["value"]
@@ -137,40 +142,40 @@ class morph_feature_Test(sciunit.Test):
         ax_p = plt.plot(ix, y_value, 'rx', markersize='8', mew=2)
 
         ix = ix + 1
-        xlabels = 'NeuriteLength' # observation.keys()
+        xlabels = 'Morpho feature' # observation.keys()
         plt.xticks(x, xlabels, rotation=20)
         plt.tick_params(labelsize=11)
         plt.figlegend((ax_o,ax_p[0]), ('Observation', 'Prediction',), 'upper right')
         plt.margins(0.1)
-        plt.ylabel("Neurite Length (um)")
+        plt.ylabel("Morpho-feature")
         fig = plt.gcf()
         fig.set_size_inches(8, 6)
+        '''
         filename = path_test_output + 'data_plot' + '.pdf'
         plt.savefig(filename, dpi=600,)
         self.figures.append(filename)
 
-
         # save figure with Z-score data
-	ind = len(observation) ## = 1
-    width = 0.35
-    score_lf = float(str(score).split()[2])
+        ind = len(observation) ## = 1
+        width = 0.35
+        score_lf = float(str(score).split()[2])
 
-    plt.bar(ind, score_lf, width, color='blue')
-    plt.xlim(0, 4)
-    plt.figlegend(ax_score, ('Z-Score',), 'upper right')
-    plt.ylabel("Score value")
+        plt.bar(ind, score_lf, width, color='blue')
+        plt.xlim(0, 4)
+        plt.figlegend(ax_score, ('Z-Score',), 'upper right')
+        plt.ylabel("Score value")
 
-    frame_bars = plt.gca()
-    frame_bars.axes.get_xaxis().set_visible(False)
+        frame_bars = plt.gca()
+        frame_bars.axes.get_xaxis().set_visible(False)
 
-    fig_bars = plt.gcf()
-    fig_bars.set_size_inches(8, 6)
+        fig_bars = plt.gcf()
+        fig_bars.set_size_inches(8, 6)
 
         filename = path_test_output + 'score_plot' + '.pdf'
         plt.savefig(filename, dpi=600,)
         self.figures.append(filename)
 
-
+        '''
         # save document with Z-score data
         filename = path_test_output + 'score_summary' + '.txt'
         dataFile = open(filename, 'w')
@@ -189,7 +194,7 @@ class morph_feature_Test(sciunit.Test):
         dataFile.write("==============================================================================\n")
         dataFile.close()
         self.figures.append(filename)
-
+        '''
         return score  # ----------------------------------------------------------------------
 
     def bind_score(self, score, model, observation, prediction):
