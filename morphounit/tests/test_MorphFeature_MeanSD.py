@@ -100,6 +100,22 @@ class morph_feature_Test(sciunit.Test):
 
         prediction = model.get_morph_feature_info()
 
+        # Adding the right units and converting feature values to strings
+        dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
+        for dict1 in mod_prediction.values():  # Dict. with cell's part-features dictionary pairs for each cell
+            for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part:
+                                          # soma, apical_dendrite, basal_dendrite or axon
+                for key, val in dict2.items():
+                    if any(sub_str in key for sub_str in ['radius', 'radii']):
+                        del dict2[key]
+                        val *= 2
+                        key = key.replace("radius", "diameter")
+                        key = key.replace("radii", "diameter")
+                    if any(sub_str in key for sub_str in dim_um):
+                        dict2[key] = dict(value=str(val)+' um')
+                    else:
+                        dict2[key] = dict(value=str(val))
+
         prediction = self.format_data(prediction)
         return prediction
 
