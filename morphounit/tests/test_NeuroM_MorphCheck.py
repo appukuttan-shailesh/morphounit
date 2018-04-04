@@ -75,4 +75,5 @@ class NeuroM_MorphoCheck(sciunit.Test):
 
     def bind_score(self, score, model, observation, prediction):
         score.related_data["figures"] = self.figures
+        score.related_data["passed"] = score.score
         return score
