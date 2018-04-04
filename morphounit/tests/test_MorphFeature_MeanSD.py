@@ -15,13 +15,12 @@ import matplotlib.pyplot as plt
 #==============================================================================
 
 class morph_feature_Test(sciunit.Test):
-    """Tests a set of neurite's morphological features"""
+    """Tests a set of cell's morphological features"""
     score_type = sci_scores.ZScore
-    id = "/tests/9?version=12"
 
     def __init__(self, observation={}, name="Cell's morpho-feature test"):
 
-        description = "Tests a set of Cell's morpho-features in a digitally reconstructed neuron"
+        description = "Tests a set of cell's morpho-features in a digitally reconstructed neuron"
         require_capabilities = (mph_cap.ProvidesMorphFeatureInfo,)
 
         self.figures = []
@@ -64,20 +63,23 @@ class morph_feature_Test(sciunit.Test):
         and their units (via quantities package)
         """
         dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
-        dim_non = ['order', 'number'']
-        for key0 in data.keys():  # Cell ID
-            for key, val in data[key0].items():  # Dict. with cell's part-feature dictionary pairs for each cell
-                try:
-                    quantity_parts = val.split()
-                    number, units_str = float(quantity_parts[0]), " ".join(quantity_parts[1:])
-                    if any(sub_str in key for sub_str in dim_um):
-                        assert (units_str==quantities.um), \
-                            sciunit.Error("Values not in appropriate format. Required units: ", quantities.um)
-                    elif any(sub_str in key for sub_str in dim_non):
-                        assert(units_str==quantities.dimensionless), \
-                            sciunit.Error("Values not in appropriate format. Required units: ", quantities.dimensionless)
-                finally:
-                    data[key0][key] = quantities.Quantity(number, units_str)
+        dim_non = ['order', 'number']
+        for dict1 in data.values():  # Dict. with cell's part-features dictionary pairs for each cell
+            for dict2 in dict1.values():    # Dict. with feature name-value pairs for each cell part: soma,
+                                            # apical_dendrite, basal_dendrite or axon
+                for dict3 in dict2.values(): # Dict. with 'value', 'mean' and 'std' values
+                    for key, val in dict3.items():
+                        quantity_parts = val.split()
+                        number, units_str = float(quantity_parts[0]), " ".join(quantity_parts[1:])
+                        try:
+                            if any(sub_str in key for sub_str in dim_um):
+                                assert (units_str == quantities.um | units_str == quantities.mm), \
+                                    sciunit.Error("Values not in appropriate format. Required units: mm or um")
+                            elif any(sub_str in key for sub_str in dim_non):
+                                assert(units_str == quantities.dimensionless), \
+                                    sciunit.Error("Values not in appropriate format. Required units: ", quantities.dimensionless)
+                        finally:
+                            dict3[key] = quantities.Quantity(number, units_str)
 
         return data
 
@@ -85,12 +87,13 @@ class morph_feature_Test(sciunit.Test):
 
     def validate_observation(self, observation):
         for dict1 in observation.values():  # Dict. with cell's part-features dictionary pairs for each cell
-            for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part:
-                                          # soma, apical_dendrite, basal_dendrite or axon
-                for val in dict2.values():
-                    assert type(val) is quantities.Quantity, \
-                            sciunit.ObservationError(("Observation must be of the form "
-                                                            "{'mean': 'XX units_str','std': 'YY units_str'}"))
+            for dict2 in dict1.values():    # Dict. with feature name-value pairs for each cell part: soma,
+                                            # apical_dendrite, basal_dendrite or axon
+                for dict3 in dict2.values():  # Dict. with 'value' or 'mean' and 'std' values
+                    for val in dict3.values():
+                        assert type(val) is quantities.Quantity, \
+                                sciunit.ObservationError(("Observation must be of the form "
+                                                          "{'mean': 'XX units_str','std': 'YY units_str'}"))
 
     #----------------------------------------------------------------------
 
@@ -98,13 +101,19 @@ class morph_feature_Test(sciunit.Test):
         """Implementation of sciunit.Test.generate_prediction"""
         self.model_name = model.name
 
-        prediction = model.get_morph_feature_info()
+        mod_prediction = model.get_morph_feature_info()
 
-        # Adding the right units and converting feature values to strings
         dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
         for dict1 in mod_prediction.values():  # Dict. with cell's part-features dictionary pairs for each cell
+            # Eliminating NeuroM's output about 'max_section_branch_order' for 'axons',
+            # as such experimental data is not provided
+            try:
+                del dict1["axon"]["max_section_branch_order"]
+            except KeyError:
+                pass
+            # Adding the right units and converting feature values to strings
             for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part:
-                                          # soma, apical_dendrite, basal_dendrite or axon
+                                            # soma, apical_dendrite, basal_dendrite or axon
                 for key, val in dict2.items():
                     if any(sub_str in key for sub_str in ['radius', 'radii']):
                         del dict2[key]
@@ -116,29 +125,41 @@ class morph_feature_Test(sciunit.Test):
                     else:
                         dict2[key] = dict(value=str(val))
 
-        prediction = self.format_data(prediction)
+        prediction = self.format_data(mod_prediction)
         return prediction
 
     #----------------------------------------------------------------------
 
     def compute_score(self, observation, prediction, verbose=True):
         """Implementation of sciunit.Test.score_prediction"""
-        score.description = "A simple Z-score"
 
-        print "observation = ", observation
-        print "prediction = ", prediction
         # Computing the scores
+        cell_t = observation.keys()[0]  # Cell type
+
+        score_cell_dict = dict.fromkeys([key0 for key0 in prediction.keys()], [])
         scores_feature_dict = prediction.copy()
+        for key0 in scores_feature_dict.keys():  # cell ID
+            scores_cell_list = list()
+            for key1 in scores_feature_dict[key0].keys():  # cell's part: soma, axon, apical_dendrite or basal_dendrite
+                for key2 in scores_feature_dict[key0][key1].keys():  # features names
+                    score_value = sci_scores.ZScore.compute(observation[cell_t][key1][key2],
+                                                           prediction[key0][key1][key2]).score
+                    scores_cell_list.extend([score_value])
 
-        for key0 in scores_feature_dict.keys():  # cell ID (in prediction) or cell_kind (in observation)
-            for key1 in scores_feature_dict[key0].keys(): # Dict. with cell's part-feature dictionary pairs for each cell
-                for key2 in scores_feature_dict.keys(): # Dict. with feature name-value pairs for each cell part:
-                                                        # soma, axon, apical_dendrite or basal_dendrite
-                    scores_feature_dict[key0][key1][key2] = sci_scores.ZScore.compute(observation[key0][key1][key2],
+                    del scores_feature_dict[key0][key1][key2]["value"]
+                    scores_feature_dict[key0][key1][key2]["Zscore"] = score_value
 
-        print "scores_feature_dict = ", scores_feature_dict                                                                                      prediction[key0][key1][key2])
-        # self.score = mph_scores.CombineZScores.compute(zscores.values())
-        self.score = scores_feature_dict[key0][key1][key2]
+            score_cell_dict[key0] = {"Combined-ZScore": mph_scores.CombineZScores.compute(scores_cell_list)}
+
+        import pprint
+        print pprint.pprint(score_cell_dict)
+
+        # Taking the maximum of the cell's scores as the overall score for the Test
+        self.score = max()
+        for dict1 in score_cell_dict.values():
+            dict["Combined-ZScore"]
+
+        self.score.description = "A simple Z-score"
 
         # create output directory
         path_test_output = self.directory_output + self.model_name + '/'
@@ -174,11 +195,11 @@ class morph_feature_Test(sciunit.Test):
         # save figure with Z-score data
         ind = len(observation) ## = 1
         width = 0.35
-        score_lf = float(str(score).split()[2])
+        # score_lf = float(str(score).split()[2])
 
-        plt.bar(ind, score_lf, width, color='blue')
+        # plt.bar(ind, score_lf, width, color='blue')
         plt.xlim(0, 4)
-        plt.figlegend(ax_score, ('Z-Score',), 'upper right')
+        # plt.figlegend(ax_score, ('Z-Score',), 'upper right')
         plt.ylabel("Score value")
 
         frame_bars = plt.gca()
@@ -211,7 +232,7 @@ class morph_feature_Test(sciunit.Test):
         dataFile.close()
         self.figures.append(filename)
         '''
-        return score  # ----------------------------------------------------------------------
+        return self.score
 
     def bind_score(self, score, model, observation, prediction):
         score.related_data["figures"] = self.figures
