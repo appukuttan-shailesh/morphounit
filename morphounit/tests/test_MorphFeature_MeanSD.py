@@ -16,11 +16,11 @@ import matplotlib.pyplot as plt
 
 class morph_feature_Test(sciunit.Test):
     """Tests a set of cell's morphological features"""
-    score_type = sci_scores.ZScore
+    score_type = mph_scores.CombineZScores
 
     def __init__(self, observation={}, name="Cell's morpho-feature test"):
 
-        description = "Tests a set of cell's morpho-features in a digitally reconstructed neuron"
+        self.description = "Tests a set of cell's morpho-features in a digitally reconstructed neuron"
         require_capabilities = (mph_cap.ProvidesMorphFeatureInfo,)
 
         self.figures = []
@@ -104,7 +104,13 @@ class morph_feature_Test(sciunit.Test):
         mod_prediction = model.get_morph_feature_info()
 
         dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
-        for dict1 in mod_prediction.values():  # Dict. with cell's part-features dictionary pairs for each cell
+        for key1, dict1 in mod_prediction.items():  # Dict. with cell's ID-features dict. pairs for each cell
+
+            # Correcting cell's ID, by omitting enclosing directory's name and file's extension
+            key0 = (key1.split("/")[-1]).split(".")[-2]
+            mod_prediction.update({key0: dict1})
+            del mod_prediction[key1]
+
             # Eliminating NeuroM's output about 'max_section_branch_order' for 'axons',
             # as such experimental data is not provided
             try:
@@ -113,7 +119,7 @@ class morph_feature_Test(sciunit.Test):
                 pass
             # Adding the right units and converting feature values to strings
             for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part:
-                                            # soma, apical_dendrite, basal_dendrite or axon
+                # soma, apical_dendrite, basal_dendrite or axon
                 for key, val in dict2.items():
                     if any(sub_str in key for sub_str in ['radius', 'radii']):
                         del dict2[key]
@@ -121,11 +127,14 @@ class morph_feature_Test(sciunit.Test):
                         key = key.replace("radius", "diameter")
                         key = key.replace("radii", "diameter")
                     if any(sub_str in key for sub_str in dim_um):
-                        dict2[key] = dict(value=str(val)+' um')
+                        dict2[key] = dict(value=str(val) + ' um')
                     else:
                         dict2[key] = dict(value=str(val))
 
+        print mod_prediction
+
         prediction = self.format_data(mod_prediction)
+
         return prediction
 
     #----------------------------------------------------------------------
@@ -151,14 +160,9 @@ class morph_feature_Test(sciunit.Test):
 
             score_cell_dict[key0] = {"Combined-ZScore": mph_scores.CombineZScores.compute(scores_cell_list)}
 
-        import pprint
-        print pprint.pprint(score_cell_dict)
-
         # Taking the maximum of the cell's scores as the overall score for the Test
-        self.score = max()
-        for dict1 in score_cell_dict.values():
-            dict["Combined-ZScore"]
-
+        max_score = max([dict1["Combined-ZScore"].score for dict1 in score_cell_dict.values()])
+        self.score = mph_scores.CombineZScores(max_score)
         self.score.description = "A simple Z-score"
 
         # create output directory
