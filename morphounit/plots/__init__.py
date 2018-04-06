@@ -12,3 +12,4 @@ modules = [ basename(f)[:-3] for f in files if isfile(f)]
 
 for module in modules:
     exec("from %s import *" % module)
+

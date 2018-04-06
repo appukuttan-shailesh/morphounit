@@ -2,8 +2,11 @@ import sciunit
 import sciunit.scores as sci_scores
 import morphounit.scores as mph_scores
 import morphounit.capabilities as mph_cap
+import morphounit.plots as mph_plots
 
 import numpy as np
+import copy
+
 import quantities
 import os
 
@@ -131,10 +134,7 @@ class morph_feature_Test(sciunit.Test):
                     else:
                         dict2[key] = dict(value=str(val))
 
-        print mod_prediction
-
         prediction = self.format_data(mod_prediction)
-
         return prediction
 
     #----------------------------------------------------------------------
@@ -142,23 +142,29 @@ class morph_feature_Test(sciunit.Test):
     def compute_score(self, observation, prediction, verbose=True):
         """Implementation of sciunit.Test.score_prediction"""
 
+        self.observation = observation
+        self.prediction = prediction
+
+
         # Computing the scores
         cell_t = observation.keys()[0]  # Cell type
 
         score_cell_dict = dict.fromkeys([key0 for key0 in prediction.keys()], [])
-        scores_feature_dict = prediction.copy()
-        for key0 in scores_feature_dict.keys():  # cell ID
+        scores_feature_dict = copy.deepcopy(prediction)
+        for key0 in scores_feature_dict:  # cell_ID keys
             scores_cell_list = list()
-            for key1 in scores_feature_dict[key0].keys():  # cell's part: soma, axon, apical_dendrite or basal_dendrite
-                for key2 in scores_feature_dict[key0][key1].keys():  # features names
+            for key1 in scores_feature_dict[key0]:  # cell's part: soma, axon, apical_dendrite or basal_dendrite
+                for key2 in scores_feature_dict[key0][key1]:  # features names
                     score_value = sci_scores.ZScore.compute(observation[cell_t][key1][key2],
                                                            prediction[key0][key1][key2]).score
                     scores_cell_list.extend([score_value])
 
                     del scores_feature_dict[key0][key1][key2]["value"]
-                    scores_feature_dict[key0][key1][key2]["Zscore"] = score_value
+                    scores_feature_dict[key0][key1][key2]["score"] = score_value
 
             score_cell_dict[key0] = {"Combined-ZScore": mph_scores.CombineZScores.compute(scores_cell_list)}
+
+        self.score_dict = scores_feature_dict
 
         # Taking the maximum of the cell's scores as the overall score for the Test
         max_score = max([dict1["Combined-ZScore"].score for dict1 in score_cell_dict.values()])
@@ -166,15 +172,21 @@ class morph_feature_Test(sciunit.Test):
         self.score.description = "A simple Z-score"
 
         # create output directory
-        path_test_output = self.directory_output + self.model_name + '/'
-        if not os.path.exists(path_test_output):
+        self.path_test_output = self.directory_output + self.model_name + '/'
+        if not os.path.exists(self.path_test_output):
             os.makedirs(path_test_output)
 
+        # Saving table with results
+        txt_table = mph_plots.TxtTable_MorphFeatures(self)
+        table_file = txt_table.create()
+        self.figures.append(table_file)
+
         # save figure with mean, std, value for observation and prediction
+        '''
         fig = plt.figure()
         x = range(len(observation))
         ix = 0
-        '''
+
         y_mean = observation["NeuriteLength"]["mean"]
         y_std = observation["NeuriteLength"]["std"]
         y_value = prediction["NeuriteLength"]["value"]
@@ -191,8 +203,8 @@ class morph_feature_Test(sciunit.Test):
         plt.ylabel("Morpho-feature")
         fig = plt.gcf()
         fig.set_size_inches(8, 6)
-        '''
-        filename = path_test_output + 'data_plot' + '.pdf'
+
+        filename = self.path_test_output + 'data_plot' + '.pdf'
         plt.savefig(filename, dpi=600,)
         self.figures.append(filename)
 
@@ -211,31 +223,8 @@ class morph_feature_Test(sciunit.Test):
 
         fig_bars = plt.gcf()
         fig_bars.set_size_inches(8, 6)
-
-        filename = path_test_output + 'score_plot' + '.pdf'
-        plt.savefig(filename, dpi=600,)
-        self.figures.append(filename)
-
         '''
-        # save document with Z-score data
-        filename = path_test_output + 'score_summary' + '.txt'
-        dataFile = open(filename, 'w')
-        dataFile.write("==============================================================================\n")
-        dataFile.write("Test Name: %s\n" % self.name)
-        dataFile.write("Model Name: %s\n" % self.model_name)
-        dataFile.write("------------------------------------------------------------------------------\n")
-        dataFile.write("Parameter #\tExpt. mean\tExpt. std\tModel value\tZ-score\n")
-        dataFile.write("..............................................................................\n")
-        o_mean = observation["NeuriteLength"]["mean"]
-        o_std = observation["NeuriteLength"]["std"]
-        p_value = prediction["NeuriteLength"]["value"]
-        dataFile.write("%s\t%s\t%s\t%s\t%s\n" % ("NeuriteLength", o_mean, o_std, p_value, score))
-        dataFile.write("------------------------------------------------------------------------------\n")
-        dataFile.write("Final Score: %s\n" % score)
-        dataFile.write("==============================================================================\n")
-        dataFile.close()
-        self.figures.append(filename)
-        '''
+
         return self.score
 
     def bind_score(self, score, model, observation, prediction):
