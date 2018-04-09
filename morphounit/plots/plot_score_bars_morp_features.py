@@ -36,13 +36,10 @@ class ScoresBars_MorphFeatures:
         pal = sns.color_palette('Reds', len(scores_cell_floats))
         rank = [int(value) - 1 for value in scores_cell_df[score_label].rank()]
         axis_obj = sns.barplot(x=scores_cell_df[score_label], y=scores_cell_df.index, palette=np.array(pal)[rank])
-        plt.subplots_adjust(left=0.25)
+        plt.subplots_adjust(left=0.3)
         axis_obj.set_yticklabels(axis_obj.get_yticklabels(), fontsize=4)
         axis_obj.set(xlabel=score_label, ylabel='Cell')
         sns.despine()
-
-        # plt.figure()
-        # plt.show()
 
         plt.savefig(filepath, dpi=600, )
 
