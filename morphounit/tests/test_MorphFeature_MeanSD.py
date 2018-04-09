@@ -4,16 +4,10 @@ import morphounit.scores as mph_scores
 import morphounit.capabilities as mph_cap
 import morphounit.plots as mph_plots
 
-import numpy as np
 import copy
 
 import quantities
 import os
-
-import matplotlib
-# Force matplotlib to not use any Xwindows backend.
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 
 #==============================================================================
 
@@ -145,7 +139,6 @@ class morph_feature_Test(sciunit.Test):
         self.observation = observation
         self.prediction = prediction
 
-
         # Computing the scores
         cell_t = observation.keys()[0]  # Cell type
 
@@ -162,12 +155,13 @@ class morph_feature_Test(sciunit.Test):
                     del scores_feature_dict[key0][key1][key2]["value"]
                     scores_feature_dict[key0][key1][key2]["score"] = score_value
 
-            score_cell_dict[key0] = {"Combined-ZScore": mph_scores.CombineZScores.compute(scores_cell_list)}
+            score_cell_dict[key0] = {"Mean-ZScore": mph_scores.CombineZScores.compute(scores_cell_list).score}
 
+        self.score_cell_dict = score_cell_dict
         self.score_dict = scores_feature_dict
 
         # Taking the maximum of the cell's scores as the overall score for the Test
-        max_score = max([dict1["Combined-ZScore"].score for dict1 in score_cell_dict.values()])
+        max_score = max([dict1["Mean-ZScore"] for dict1 in score_cell_dict.values()])
         self.score = mph_scores.CombineZScores(max_score)
         self.score.description = "A simple Z-score"
 
@@ -181,49 +175,10 @@ class morph_feature_Test(sciunit.Test):
         table_file = txt_table.create()
         self.figures.append(table_file)
 
-        # save figure with mean, std, value for observation and prediction
-        '''
-        fig = plt.figure()
-        x = range(len(observation))
-        ix = 0
-
-        y_mean = observation["NeuriteLength"]["mean"]
-        y_std = observation["NeuriteLength"]["std"]
-        y_value = prediction["NeuriteLength"]["value"]
-        ax_o = plt.errorbar(ix, y_mean, yerr=y_std, ecolor='black', elinewidth=2,
-                        capsize=5, capthick=2, fmt='ob', markersize='5', mew=5)
-        ax_p = plt.plot(ix, y_value, 'rx', markersize='8', mew=2)
-
-        ix = ix + 1
-        xlabels = 'Morpho feature' # observation.keys()
-        plt.xticks(x, xlabels, rotation=20)
-        plt.tick_params(labelsize=11)
-        plt.figlegend((ax_o,ax_p[0]), ('Observation', 'Prediction',), 'upper right')
-        plt.margins(0.1)
-        plt.ylabel("Morpho-feature")
-        fig = plt.gcf()
-        fig.set_size_inches(8, 6)
-
-        filename = self.path_test_output + 'data_plot' + '.pdf'
-        plt.savefig(filename, dpi=600,)
-        self.figures.append(filename)
-
-        # save figure with Z-score data
-        ind = len(observation) ## = 1
-        width = 0.35
-        # score_lf = float(str(score).split()[2])
-
-        # plt.bar(ind, score_lf, width, color='blue')
-        plt.xlim(0, 4)
-        # plt.figlegend(ax_score, ('Z-Score',), 'upper right')
-        plt.ylabel("Score value")
-
-        frame_bars = plt.gca()
-        frame_bars.axes.get_xaxis().set_visible(False)
-
-        fig_bars = plt.gcf()
-        fig_bars.set_size_inches(8, 6)
-        '''
+        # Saving figure with scores bar-plot
+        barplot_figure = mph_plots.ScoresBars_MorphFeatures(self)
+        barplot_file = barplot_figure.create()
+        self.figures.append(barplot_file)
 
         return self.score
 
