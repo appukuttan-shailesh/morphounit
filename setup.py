@@ -6,8 +6,8 @@ except ImportError:
 setup(
     name='morphounit',
     version='0.3',
-    author='Shailesh Appukuttan',
-    author_email='shailesh.appukuttan@unic.cnrs-gif.fr',
+    author='Shailesh Appukuttan, Pedro Garcia',
+    author_email='shailesh.appukuttan@unic.cnrs-gif.fr, pedro.garcia@unic.cnrs-gif.fr',
     packages=['morphounit',
               'morphounit.capabilities',
               'morphounit.tests',
