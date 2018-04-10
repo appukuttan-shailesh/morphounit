@@ -143,30 +143,31 @@ class morph_feature_Test(sciunit.Test):
         cell_t = observation.keys()[0]  # Cell type
 
         score_cell_dict = dict.fromkeys([key0 for key0 in prediction.keys()], [])
-        scores_feature_dict = copy.deepcopy(prediction)
-        for key0 in scores_feature_dict:  # cell_ID keys
+        score_feat_dict = copy.deepcopy(prediction)
+        for key0 in score_feat_dict:  # cell_ID keys
             scores_cell_list = list()
-            for key1 in scores_feature_dict[key0]:  # cell's part: soma, axon, apical_dendrite or basal_dendrite
-                for key2 in scores_feature_dict[key0][key1]:  # features names
+            for key1 in score_feat_dict[key0]:  # cell's part: soma, axon, apical_dendrite or basal_dendrite
+                for key2 in score_feat_dict[key0][key1]:  # features names
                     score_value = sci_scores.ZScore.compute(observation[cell_t][key1][key2],
                                                            prediction[key0][key1][key2]).score
                     scores_cell_list.extend([score_value])
 
-                    del scores_feature_dict[key0][key1][key2]["value"]
-                    scores_feature_dict[key0][key1][key2]["score"] = score_value
+                    del score_feat_dict[key0][key1][key2]["value"]
+                    score_feat_dict[key0][key1][key2]["score"] = score_value
 
-            score_cell_dict[key0] = {"Mean-ZScore": mph_scores.CombineZScores.compute(scores_cell_list).score}
+            score_cell_dict[key0] = {"Mean Z-score": mph_scores.CombineZScores.compute(scores_cell_list).score}
 
         self.score_cell_dict = score_cell_dict
-        self.score_dict = scores_feature_dict
+        self.score_feat_dict = score_feat_dict
 
         # Taking the maximum of the cell's scores as the overall score for the Test
-        max_score = max([dict1["Mean-ZScore"] for dict1 in score_cell_dict.values()])
+        max_score = max([dict1["Mean Z-score"] for dict1 in score_cell_dict.values()])
         self.score = mph_scores.CombineZScores(max_score)
         self.score.description = "A simple Z-score"
 
+        # ---------------------- Saving relevant results ----------------------
         # create output directory
-        self.path_test_output = self.directory_output + self.model_name + '/'
+        self.path_test_output = self.directory_output + self.model_name
         if not os.path.exists(self.path_test_output):
             os.makedirs(path_test_output)
 
@@ -178,7 +179,7 @@ class morph_feature_Test(sciunit.Test):
         # Saving figure with scores bar-plot
         barplot_figure = mph_plots.ScoresBars_MorphFeatures(self)
         barplot_file = barplot_figure.create()
-        self.figures.append(barplot_file)
+        self.figures.extend(barplot_file)
 
         return self.score
 
