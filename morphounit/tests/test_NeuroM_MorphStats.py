@@ -7,6 +7,7 @@ import morphounit.plots as mph_plots
 import os
 import copy
 from datetime import datetime
+import json
 
 import numpy as np
 import quantities
@@ -130,6 +131,14 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                     else:
                         dict2[key] = dict(value=str(val))
 
+        # Saving the prediction formatted in a json-file
+        pred_file = os.path.join(model.pred_path, 'NeuroM_MorphStats_prediction_formatted.json')
+        with open(model.pred_path, 'w') as fp:
+            json.dump(mod_prediction, fp, sort_keys=True, indent=4)
+
+        fp.close()
+
+        self.figures.append(pred_file)
         prediction = self.format_data(mod_prediction)
         return prediction
 
