@@ -4,18 +4,20 @@ import morphounit.scores as mph_scores
 import morphounit.capabilities as mph_cap
 import morphounit.plots as mph_plots
 
-import copy
-
-import quantities
 import os
+import copy
+from datetime import datetime
 
-#==============================================================================
+import numpy as np
+import quantities
+
+# ==============================================================================
 
 class NeuroM_MorphStats_Test(sciunit.Test):
     """Tests a set of cell's morphological features"""
     score_type = mph_scores.CombineZScores
 
-    def __init__(self, observation={}, name="Cell's morpho-feature test"):
+    def __init__(self, observation=None, name="Cell's morpho-stats test", base_directory='.'):
 
         self.description = "Tests a set of cell's morpho-features in a digitally reconstructed neuron"
         require_capabilities = (mph_cap.ProvidesMorphFeatureInfo,)
@@ -23,9 +25,9 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         self.figures = []
         observation = self.format_data(observation)
         sciunit.Test.__init__(self, observation, name)
-        self.directory_output = './output/'
+        self.base_directory = base_directory
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
 
     def format_data(self, data):
         """
@@ -92,11 +94,11 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                                 sciunit.ObservationError(("Observation must be of the form "
                                                           "{'mean': 'XX units_str','std': 'YY units_str'}"))
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
 
     def generate_prediction(self, model, verbose=False):
         """Implementation of sciunit.Test.generate_prediction"""
-        self.model_name = model.name
+        self.model_version = model.version
 
         mod_prediction = model.get_morph_feature_info()
 
@@ -131,7 +133,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         prediction = self.format_data(mod_prediction)
         return prediction
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
 
     def compute_score(self, observation, prediction, verbose=True):
         """Implementation of sciunit.Test.score_prediction"""
@@ -148,38 +150,39 @@ class NeuroM_MorphStats_Test(sciunit.Test):
             scores_cell_list = list()
             for key1 in score_feat_dict[key0]:  # cell's part: soma, axon, apical_dendrite or basal_dendrite
                 for key2 in score_feat_dict[key0][key1]:  # features names
-                    score_value = sci_scores.ZScore.compute(observation[cell_t][key1][key2],
+                    score_feat_value = sci_scores.ZScore.compute(observation[cell_t][key1][key2],
                                                            prediction[key0][key1][key2]).score
-                    scores_cell_list.extend([score_value])
+                    scores_cell_list.extend([score_feat_value])
 
                     del score_feat_dict[key0][key1][key2]["value"]
-                    score_feat_dict[key0][key1][key2]["score"] = score_value
+                    score_feat_dict[key0][key1][key2]["score"] = score_feat_value
 
             score_cell_dict[key0] = {"Mean Z-score": mph_scores.CombineZScores.compute(scores_cell_list).score}
 
         self.score_cell_dict = score_cell_dict
         self.score_feat_dict = score_feat_dict
 
-        # Taking the maximum of the cell's scores as the overall score for the Test
-        max_score = max([dict1["Mean Z-score"] for dict1 in score_cell_dict.values()])
-        self.score = mph_scores.CombineZScores(max_score)
+        # Taking the average of the cell's scores as the overall score for the Test
+        mean_score = np.mean([dict1["Mean Z-score"] for dict1 in score_cell_dict.values()])
+        self.score = mph_scores.CombineZScores(mean_score)
         self.score.description = "A simple Z-score"
 
         # ---------------------- Saving relevant results ----------------------
         # create output directory
-        self.path_test_output = self.directory_output + self.model_name
+        self.path_test_output = os.path.join(self.base_directory, 'validation_results', 'neuroM_morph_softChecks',
+                                             self.model_version, datetime.now().strftime("%Y%m%d-%H%M%S"))
         if not os.path.exists(self.path_test_output):
             os.makedirs(self.path_test_output)
 
         # Saving table with results
         txt_table = mph_plots.TxtTable_MorphStats(self)
-        table_file = txt_table.create()
-        self.figures.append(table_file)
+        table_files = txt_table.create()
+        self.figures.extend(table_files)
 
         # Saving figure with scores bar-plot
         barplot_figure = mph_plots.ScoresBars_MorphStats(self)
-        barplot_file = barplot_figure.create()
-        self.figures.extend(barplot_file)
+        barplot_files = barplot_figure.create()
+        self.figures.extend(barplot_files)
 
         return self.score
 

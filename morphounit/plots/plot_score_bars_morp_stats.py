@@ -8,6 +8,8 @@ matplotlib.use('Agg')  # Force matplotlib to not use any Xwindows backend.
 from matplotlib import pyplot as plt
 import seaborn as sns
 
+import os
+
 #==============================================================================
 
 
@@ -18,8 +20,8 @@ class ScoresBars_MorphStats:
 
     def __init__(self, testObj):
         self.testObj = testObj
-        self.filename_cells = "score_bars_cells"
-        self.filename_cell_feat = "score_bars_morpho_features"
+        self.prefix_filename_cells = "score_bars_cells"
+        self.prefix_filename_cell_feat = "score_bars_morpho_features_"
         self.filepath_list = list()
 
     def score_barplot(self, filepath=None, scores_floats={}, score_label=None,
@@ -46,9 +48,10 @@ class ScoresBars_MorphStats:
         return self.filepath_list
 
     def create(self):
-        '''
+
         # --------------------------- Plotting overall cell scores -------------------------------------------------
-        filepath_score_cells = self.testObj.path_test_output + "/" + self.filename_cells + '.png'
+        """
+        filepath_score_cells = os.path.join(self.testObj.path_test_output, self.prefix_filename_cells + '.png')
         score_label = "Mean Z-score"
         plt_title = "Cells scores summary"
 
@@ -58,15 +61,15 @@ class ScoresBars_MorphStats:
 
         self.score_barplot(filepath=filepath_score_cells, scores_floats=scores_cell_floats, score_label=score_label,
                            xlabel=score_label, ylabel='Cell', title=plt_title)
-        '''
+        """
         # -------------------------- Plotting cell's feature scores ------------------------------------------------
         score_label = "Z-Score"
 
         scores_dict = self.testObj.score_feat_dict
         for key_0 in scores_dict:  # cell ID keys
-            plt_title = 'Cell: ' + key_0
+            plt_title = key_0
             filepath_score_feat = \
-                self.testObj.path_test_output + "/" + self.filename_cell_feat + '_' + plt_title + '.png'
+                os.path.join(self.testObj.path_test_output, self.prefix_filename_cell_feat + plt_title + '.png')
 
             scores_feat_floats = dict()
             for key_1 in scores_dict[key_0]:  # cell's part keys: soma, axon, apical_dendrite or basal_dendrite

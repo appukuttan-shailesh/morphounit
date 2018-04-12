@@ -2,6 +2,7 @@
 ## https://github.com/appukuttan-shailesh/basalunit.git
 
 from tabulate import tabulate
+import os
 
 # ==============================================================================
 
@@ -12,22 +13,43 @@ class TxtTable_MorphStats:
     """
 
     def __init__(self, testObj):
+
         self.testObj = testObj
-        self.filename = "score_summary"
+        self.prefix_filename_cell = "score_summary_"
+        self.filepath_list = list()
 
-    def create(self):
+    def score_TxtTable(self, filepath=None, cell_ID=None, score_label=None, row_list=[]):
 
-        filepath = self.testObj.path_test_output + "/" + self.filename + '.txt'
         dataFile = open(filepath, 'w')
 
         dataFile.write("============================================================================================\n")
-        dataFile.write("Test Name: %s\n\n\n" % self.testObj.name)
+        dataFile.write("Test Name: %s\n" % self.testObj.name)
+        dataFile.write("Model Name: %s\n\n" % cell_ID)
+
         header_list = ["Morphological feature", "Expt. mean", "Expt. std", "Model value", "Score"]
+        dataFile.write(tabulate(row_list, headers=header_list, tablefmt='orgtbl'))
+        dataFile.write("\n-----------------------------------------------------------------------------------------"
+                       "------------\n\n")
+
+        dataFile.write("Final Score: %s (%s)\n" % (self.testObj.score_cell_dict[cell_ID][score_label], score_label))
+        dataFile.write("============================================================================================\n")
+
+        dataFile.close()
+
+        self.filepath_list.append(filepath)
+        return self.filepath_list
+
+    def create(self):
+
+        score_label = "Mean Z-score"
 
         cell_t = self.testObj.observation.keys()[0]  # Cell type
         for key_0 in self.testObj.prediction:  # cell ID keys
 
-            dataFile.write("Model Name: %s\n" % key_0)
+            tab_title = key_0
+            filepath_summary_cell = \
+                os.path.join(self.testObj.path_test_output, self.prefix_filename_cell + tab_title + '.txt')
+
             row_list = []
 
             for key_1 in self.testObj.prediction[key_0]:  # cell's part keys: soma, axon, apical_dendrite or basal_dendrite
@@ -40,12 +62,7 @@ class TxtTable_MorphStats:
                     feat_name = "{}.{}".format(key_1, key_2)
                     row_list.append([feat_name, o_mean, o_std, p_value, score])
 
-            dataFile.write(tabulate(row_list, headers=header_list, tablefmt='orgtbl'))
-            dataFile.write("\n-----------------------------------------------------------------------------------------"
-                           "------------\n\n")
+            self.score_TxtTable(filepath=filepath_summary_cell, cell_ID=tab_title,
+                                score_label=score_label, row_list=row_list)
 
-        dataFile.write("Final Score: %s\n" % self.testObj.score)
-        dataFile.write("============================================================================================\n")
-        dataFile.close()
-
-        return filepath
+        return self.filepath_list
