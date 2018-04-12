@@ -11,7 +11,7 @@ import os
 
 #==============================================================================
 
-class morph_feature_Test(sciunit.Test):
+class NeuroM_MorphStats_Test(sciunit.Test):
     """Tests a set of cell's morphological features"""
     score_type = mph_scores.CombineZScores
 
@@ -169,15 +169,15 @@ class morph_feature_Test(sciunit.Test):
         # create output directory
         self.path_test_output = self.directory_output + self.model_name
         if not os.path.exists(self.path_test_output):
-            os.makedirs(path_test_output)
+            os.makedirs(self.path_test_output)
 
         # Saving table with results
-        txt_table = mph_plots.TxtTable_MorphFeatures(self)
+        txt_table = mph_plots.TxtTable_MorphStats(self)
         table_file = txt_table.create()
         self.figures.append(table_file)
 
         # Saving figure with scores bar-plot
-        barplot_figure = mph_plots.ScoresBars_MorphFeatures(self)
+        barplot_figure = mph_plots.ScoresBars_MorphStats(self)
         barplot_file = barplot_figure.create()
         self.figures.extend(barplot_file)
 

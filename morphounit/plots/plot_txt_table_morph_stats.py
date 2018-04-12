@@ -6,7 +6,7 @@ from tabulate import tabulate
 # ==============================================================================
 
 
-class TxtTable_MorphFeatures:
+class TxtTable_MorphStats:
     """
     Displays data in table inside text file
     """

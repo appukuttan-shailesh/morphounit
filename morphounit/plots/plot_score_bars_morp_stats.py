@@ -11,7 +11,7 @@ import seaborn as sns
 #==============================================================================
 
 
-class ScoresBars_MorphFeatures:
+class ScoresBars_MorphStats:
     """
     Displays data in table inside text file
     """
