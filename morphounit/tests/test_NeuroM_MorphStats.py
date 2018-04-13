@@ -103,6 +103,16 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
         mod_prediction = model.get_morph_feature_info()
 
+        # Regrouping all soma's features-values pairs into a unique 'soma' key inside mod_prediction
+        for dict1 in mod_prediction.values():  # Set of cell's part-features dictionary pairs for each cell
+            soma_features = dict()
+            for key, val in dict1.items():
+                if key.find('soma') == -1:
+                    continue
+                soma_features.update({key: val})
+                del dict1[key]
+                dict1.update({"soma": soma_features})
+
         dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
         for key1, dict1 in mod_prediction.items():  # Dict. with cell's ID-features dict. pairs for each cell
 
@@ -132,13 +142,13 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                         dict2[key] = dict(value=str(val))
 
         # Saving the prediction formatted in a json-file
-        pred_file = os.path.join(model.pred_path, 'NeuroM_MorphStats_prediction_formatted.json')
-        with open(model.pred_path, 'w') as fp:
+        pred_file = os.path.join(model.pred_path, 'NeuroM_MorphStats_prediction.json')
+        with open(pred_file, 'w') as fp:
             json.dump(mod_prediction, fp, sort_keys=True, indent=4)
 
         fp.close()
-
         self.figures.append(pred_file)
+
         prediction = self.format_data(mod_prediction)
         return prediction
 
