@@ -9,6 +9,10 @@ import shlex
 import json
 from datetime import datetime
 
+import matplotlib.backends.backend_pdf
+from neurom.apps.cut_plane_detection import find_cut_plane
+from neurom import load_neuron
+
 #==============================================================================
 
 class NeuroM_MorphoCheck(sciunit.Test):
@@ -37,27 +41,44 @@ class NeuroM_MorphoCheck(sciunit.Test):
     def generate_prediction(self, model, verbose=False):
         """Implementation of sciunit.Test.generate_prediction."""
         self.model_version = model.version
-
         self.path_test_output = os.path.join(self.base_directory, 'validation_results', 'neuroM_morph_hardChecks', self.model_version, datetime.now().strftime("%Y%m%d-%H%M%S"))
         if not os.path.exists(self.path_test_output):
             os.makedirs(self.path_test_output)
 
         # note: observation here is either the contents of the config file or a local path
-        # check if local path, else try to retrieve online
-        if not os.path.isfile(self.observation):
-            # create a local copy for reference
-            config_file = os.path.join(self.path_test_output, "config.yml")
-            with open(config_file,'w') as f:
-                f.write(self.observation)
-            self.observation = config_file
+        # if local path load contents
+        if os.path.isfile(self.observation):
+            with open(self.observation) as f:
+                self.observation = json.load(f)
+        # save morph_check config as local file
+        morph_check_config_file = os.path.join(self.path_test_output, "morph_check_config.json")
+        with open(morph_check_config_file,'w') as f:
+            json.dump(self.observation["morph_check"], f, indent=4)
+        cut_plane_config = self.observation["cut_plane"]
 
-        output_file = os.path.join(self.path_test_output, "output.json")
-        call(shlex.split("morph_check -C {} -o {} {}".format(self.observation, output_file, model.morph_path)))
-        with open(output_file) as json_data:
+        morhpcheck_output_file = os.path.join(self.path_test_output, "morph_check_output.json")
+        call(shlex.split("morph_check -C {} -o {} {}".format(morph_check_config_file, morhpcheck_output_file, model.morph_path)))
+        with open(morhpcheck_output_file) as json_data:
             prediction = json.load(json_data)
-        print "Prediction = ", prediction
 
-        self.figures.append(output_file)
+        cut_plane_output_json = find_cut_plane(load_neuron(model.morph_path), bin_width=cut_plane_config["bin_width"], display=True)
+        cut_plane_figure_list = []
+        for key in cut_plane_output_json["figures"].keys():
+            cut_plane_figure_list.append(cut_plane_output_json["figures"][key][0])
+        cutplane_output_pdf = os.path.join(self.path_test_output, "cut_plane_figures.pdf")
+        cut_plane_pdf = matplotlib.backends.backend_pdf.PdfPages(cutplane_output_pdf)
+        for fig in xrange(1, len(cut_plane_figure_list)+1):
+            cut_plane_pdf.savefig(fig)
+        cut_plane_pdf.close()
+        cutplane_output_file = os.path.join(self.path_test_output, "cut_plane_output.json")
+        cut_plane_output_json.pop("figures")
+        cut_plane_output_json["cut_leaves"] = cut_plane_output_json["cut_leaves"].tolist()
+        with open(cutplane_output_file, "w") as outfile:
+            json.dump(cut_plane_output_json, outfile, indent=4)
+
+        self.figures.append(morhpcheck_output_file)
+        self.figures.append(cutplane_output_file)
+        self.figures.append(cutplane_output_pdf)
         return prediction
 
     #----------------------------------------------------------------------
