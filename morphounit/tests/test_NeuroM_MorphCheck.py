@@ -47,7 +47,7 @@ class NeuroM_MorphoCheck(sciunit.Test):
 
         # note: observation here is either the contents of the config file or a local path
         # if local path load contents
-        if os.path.isfile(self.observation):
+        if not isinstance(self.observation, dict):        
             with open(self.observation) as f:
                 self.observation = json.load(f)
         # save morph_check config as local file
