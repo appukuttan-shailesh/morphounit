@@ -9,6 +9,7 @@ import copy
 from datetime import datetime
 import json
 
+import neurom as nm
 import numpy as np
 import quantities
 
@@ -103,8 +104,53 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
         mod_prediction = model.get_morph_feature_info()
 
-        # Regrouping all soma's features-values pairs into a unique 'soma' key inside mod_prediction
+        mapping = lambda section: section.points
+        for key0, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs for each cell
+
+            # Eliminating NeuroM's output about 'max_section_branch_order' for 'axons',
+            # as such experimental data is not provided
+            try:
+                del dict0["axon"]["max_section_branch_order"]
+            except KeyError:
+                pass
+
+            # Correcting cell's ID, by omitting enclosing directory's name and file's extension
+            cell_ID = (key0.split("/")[-1]).split(".")[-2]
+            mod_prediction.update({cell_ID: dict0})
+            del mod_prediction[key0]
+
+            # Adding two more neurite features:
+            # neurite-field diameter and neurite's bounding-box -X,Y,Z- extents
+            neuron_model = nm.load_neuron(key0)
+            for key1, dict1 in dict0.items():  # Dict. with feature name-value pairs for each cell part:
+                # soma, apical_dendrite, basal_dendrite or axon
+                if any(sub_str in key1 for sub_str in ['axon', 'dendrite']):
+                    cell_part = key1
+                    filter = lambda neurite: neurite.type == getattr(nm.NeuriteType, cell_part)
+                    neurite_points = [p for p in nm.iter_neurites(neuron_model, mapping, filter)]
+                    neurite_points = np.concatenate(neurite_points)
+
+                    # Compute the neurite-field diameter
+                    len_points = len(neurite_points)
+                    point_dists = list()
+                    for idx in range(len_points - 1):
+                        for idx_next in range(idx + 1, len_points):
+                            point_dists.append(nm.morphmath.point_dist(
+                                neurite_points[idx], neurite_points[idx_next]))
+
+                    dict1.update({"neurite_field_diameter": max(point_dists)})
+
+                    # Compute the neurite's bounding-box -X,Y,Z- extents
+                    neurite_X_extent, neurite_Y_extent, neurite_Z_extent = \
+                        np.max(neurite_points[:, 0:3], axis=0) - np.min(neurite_points[:, 0:3], axis=0)
+                    dict1.update({"neurite_X_extent": neurite_X_extent})
+                    dict1.update({"neurite_Y_extent": neurite_Y_extent})
+                    dict1.update({"neurite_Z_extent": neurite_Z_extent})
+
+        dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
         for dict1 in mod_prediction.values():  # Set of cell's part-features dictionary pairs for each cell
+
+            # Regrouping all soma's features-values pairs into a unique 'soma' key inside mod_prediction
             soma_features = dict()
             for key, val in dict1.items():
                 if key.find('soma') == -1:
@@ -113,23 +159,9 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                 del dict1[key]
                 dict1.update({"soma": soma_features})
 
-        dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
-        for key1, dict1 in mod_prediction.items():  # Dict. with cell's ID-features dict. pairs for each cell
-
-            # Correcting cell's ID, by omitting enclosing directory's name and file's extension
-            key0 = (key1.split("/")[-1]).split(".")[-2]
-            mod_prediction.update({key0: dict1})
-            del mod_prediction[key1]
-
-            # Eliminating NeuroM's output about 'max_section_branch_order' for 'axons',
-            # as such experimental data is not provided
-            try:
-                del dict1["axon"]["max_section_branch_order"]
-            except KeyError:
-                pass
             # Adding the right units and converting feature values to strings
             for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part:
-                # soma, apical_dendrite, basal_dendrite or axon
+                                            # soma, apical_dendrite, basal_dendrite or axon
                 for key, val in dict2.items():
                     if any(sub_str in key for sub_str in ['radius', 'radii']):
                         del dict2[key]
@@ -141,12 +173,12 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                     else:
                         dict2[key] = dict(value=str(val))
 
-        # Saving the prediction formatted in a json-file
+        # Saving the prediction in a formatted json-file
         pred_file = os.path.join(model.pred_path, 'NeuroM_MorphStats_prediction.json')
-        with open(pred_file, 'w') as fp:
-            json.dump(mod_prediction, fp, sort_keys=True, indent=4)
-
+        fp = open(pred_file, 'w')
+        json.dump(mod_prediction, fp, sort_keys=True, indent=4)
         fp.close()
+
         self.figures.append(pred_file)
 
         prediction = self.format_data(mod_prediction)
