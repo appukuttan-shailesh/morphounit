@@ -220,9 +220,11 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
         # ---------------------- Saving relevant results ----------------------
         # create output directory
+        # Currently this is done inside the model Class
+        """
         if not os.path.exists(self.path_test_output):
             os.makedirs(self.path_test_output)
-
+        """
         # Saving table with results
         txt_table = mph_plots.TxtTable_MorphStats(self)
         table_files = txt_table.create()
