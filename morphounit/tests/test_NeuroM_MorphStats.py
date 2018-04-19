@@ -6,7 +6,6 @@ import morphounit.plots as mph_plots
 
 import os
 import copy
-from datetime import datetime
 import json
 
 import neurom as nm
@@ -19,7 +18,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
     """Tests a set of cell's morphological features"""
     score_type = mph_scores.CombineZScores
 
-    def __init__(self, observation=None, name="Cell's morpho-stats test", base_directory='.'):
+    def __init__(self, observation=None, name="Cell's morpho-stats test"):
 
         self.description = "Tests a set of cell's morpho-features in a digitally reconstructed neuron"
         # require_capabilities = (mph_cap.ProvidesMorphFeatureInfo,)
@@ -27,7 +26,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         self.figures = []
         observation = self.format_data(observation)
         sciunit.Test.__init__(self, observation, name)
-        self.base_directory = base_directory
 
     # ----------------------------------------------------------------------
 
@@ -100,7 +98,9 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
     def generate_prediction(self, model, verbose=False):
         """Implementation of sciunit.Test.generate_prediction"""
+
         self.model_version = model.version
+        self.path_test_output = model.morph_stats_output
 
         mod_prediction = model.get_morph_feature_info()
 
@@ -174,7 +174,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                         dict2[key] = dict(value=str(val))
 
         # Saving the prediction in a formatted json-file
-        pred_file = os.path.join(model.pred_path, 'NeuroM_MorphStats_prediction.json')
+        pred_file = os.path.join(self.path_test_output, 'NeuroM_MorphStats_prediction.json')
         fp = open(pred_file, 'w')
         json.dump(mod_prediction, fp, sort_keys=True, indent=4)
         fp.close()
@@ -220,8 +220,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
         # ---------------------- Saving relevant results ----------------------
         # create output directory
-        self.path_test_output = os.path.join(self.base_directory, 'validation_results', 'neuroM_morph_softChecks',
-                                             self.model_version, datetime.now().strftime("%Y%m%d-%H%M%S"))
         if not os.path.exists(self.path_test_output):
             os.makedirs(self.path_test_output)
 
@@ -240,4 +238,3 @@ class NeuroM_MorphStats_Test(sciunit.Test):
     def bind_score(self, score, model, observation, prediction):
         score.related_data["figures"] = self.figures
         return score
-

@@ -2,6 +2,7 @@ import sciunit
 import os
 import json
 
+from datetime import datetime
 
 class neuroM_loader(sciunit.Model):
     def __init__(self, name="neuroM_loader", description="", model_path=None):
@@ -18,18 +19,25 @@ class neuroM_loader(sciunit.Model):
 class NeuroM_MorphStats(sciunit.Model):
     """A class to interact with morphology files via the morphometrics-NeuroM's API (morph_stats)"""
 
-    # model_instance_uuid = "421e6a79-80b1-4d2f-8c43-b2f37bfc1cfc"  # environment="prod"
-    model_instance_uuid = "cba18d6d-a60c-491d-bc8f-09114d127aac"  # environment="dev"
+    model_instance_uuid = "421e6a79-80b1-4d2f-8c43-b2f37bfc1cfc"  # environment="prod"
+    # model_instance_uuid = "cba18d6d-a60c-491d-bc8f-09114d127aac"  # environment="dev"
 
-    def __init__(self, name='NeuroM_MorphStats', model_path=None, config_path=None, pred_path=None, stats_file=None):
+    def __init__(self, model_name='NeuroM_MorphStats', morph_path=None,
+                 config_path=None, morph_stats_file=None, base_directory='.'):
 
-        sciunit.Model.__init__(self, name=name)
+        sciunit.Model.__init__(self, name=model_name)
         self.description = "A class to interact with morphology files via the morphometrics-NeuroM's API (morph_stats)"
-        self.version = name
-        self.morph_path = model_path
+        self.version = model_name
+
+        self.morph_path = morph_path
         self.config_path = config_path
-        self.pred_path = pred_path
-        self.output_path = os.path.join(pred_path, stats_file)
+
+        # Defining output directory
+        self.morph_stats_output = os.path.join(base_directory, 'validation_results', 'neuroM_morph_softChecks',
+                                             self.version, datetime.now().strftime("%Y%m%d-%H%M%S"))
+
+        self.output_file = os.path.join(self.morph_stats_output, morph_stats_file)
+
         self.morph_feature_info = self.set_morph_feature_info()
 
     def set_morph_feature_info(self):
@@ -52,13 +60,17 @@ class NeuroM_MorphStats(sciunit.Model):
         ... }
         """
 
+        # create output directory
+        if not os.path.exists(self.morph_stats_output):
+            os.makedirs(self.morph_stats_output)
+
         try:
-            os.system('morph_stats -C {} -o {} {}'.format(self.config_path, self.output_path, self.morph_path))
+            os.system('morph_stats -C {} -o {} {}'.format(self.config_path, self.output_file, self.morph_path))
         except IOError:
             print "Please specify the paths to the morphology directory and configuration file for morph_stats"
 
         # Saving NeuroM's morph_stats output in a formatted json-file
-        fp = open(self.output_path, 'r+')
+        fp = open(self.output_file, 'r+')
         mod_prediction = json.load(fp)
         fp.seek(0)
         json.dump(mod_prediction, fp, sort_keys=True, indent=4)
@@ -68,4 +80,3 @@ class NeuroM_MorphStats(sciunit.Model):
 
     def get_morph_feature_info(self):
         return self.morph_feature_info
-
