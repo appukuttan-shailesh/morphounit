@@ -20,9 +20,6 @@ class neuroM_loader(sciunit.Model):
 class NeuroM_MorphStats(sciunit.Model):
     """A class to interact with morphology files via the morphometrics-NeuroM's API (morph_stats)"""
 
-    model_instance_uuid = "421e6a79-80b1-4d2f-8c43-b2f37bfc1cfc"  # environment="prod"
-    # model_instance_uuid = "cba18d6d-a60c-491d-bc8f-09114d127aac"  # environment="dev"
-
     def __init__(self, model_name='NeuroM_MorphStats', morph_path=None,
                  config_path=None, morph_stats_file=None, base_directory='.'):
 
