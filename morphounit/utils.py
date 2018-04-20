@@ -18,8 +18,8 @@ class neuroM_loader(sciunit.Model):
 
 
 class NeuroM_MorphStats(sciunit.Model):
-    """A class to interact with morphology files via the morphometrics-NeuroM's API (morph_stats)"""
 
+    """A class to interact with morphology files via the morphometrics-NeuroM's API (morph_stats)"""
     def __init__(self, model_name='NeuroM_MorphStats', morph_path=None,
                  config_path=None, morph_stats_file=None, base_directory='.'):
 
