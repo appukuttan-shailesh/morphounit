@@ -100,7 +100,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         """Implementation of sciunit.Test.generate_prediction"""
 
         self.path_test_output = model.morph_stats_output
-
+        self.morp_path = model.morph_path
         mod_prediction = model.get_morph_feature_info()
 
         mapping = lambda section: section.points
@@ -121,6 +121,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
             # Adding two more neurite features:
             # neurite-field diameter and neurite's bounding-box -X,Y,Z- extents
+            neuron_path = os.path.join(self.morp_path, cell_ID+'.swc')
             neuron_model = nm.load_neuron(key0)
             for key1, dict1 in dict0.items():  # Dict. with feature name-value pairs for each cell part:
                 # soma, apical_dendrite, basal_dendrite or axon
