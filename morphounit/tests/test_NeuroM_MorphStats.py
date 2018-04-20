@@ -99,7 +99,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
     def generate_prediction(self, model, verbose=False):
         """Implementation of sciunit.Test.generate_prediction"""
 
-        self.model_version = model.version
         self.path_test_output = model.morph_stats_output
 
         mod_prediction = model.get_morph_feature_info()
@@ -107,15 +106,16 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         mapping = lambda section: section.points
         for key0, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs for each cell
 
-            # Eliminating NeuroM's output about 'max_section_branch_order' for 'axons',
+            # Deleting NeuroM's output about 'max_section_branch_order' for 'axons',
             # as such experimental data is not provided
             try:
                 del dict0["axon"]["max_section_branch_order"]
             except KeyError:
                 pass
 
-            # Correcting cell's ID, by omitting enclosing directory's name and file's extension
-            cell_ID = (key0.split("/")[-1]).split(".")[-2]
+            # Correcting cell's ID, given by some neuroM versions:
+            # omitting enclosing directory's name  and file's extension
+            cell_ID = (key0.split("/")[-1]).split(".")[0]
             mod_prediction.update({cell_ID: dict0})
             del mod_prediction[key0]
 
