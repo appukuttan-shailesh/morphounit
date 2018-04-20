@@ -119,10 +119,13 @@ class NeuroM_MorphStats_Test(sciunit.Test):
             mod_prediction.update({cell_ID: dict0})
             del mod_prediction[key0]
 
+            if os.path.isdir(self.morp_path):
+                neuron_path = os.path.join(self.morp_path, cell_ID+'.swc')
+            else:
+                neuron_path = self.morp_path
+            neuron_model = nm.load_neuron(neuron_path)
             # Adding two more neurite features:
             # neurite-field diameter and neurite's bounding-box -X,Y,Z- extents
-            neuron_path = os.path.join(self.morp_path, cell_ID+'.swc')
-            neuron_model = nm.load_neuron(key0)
             for key1, dict1 in dict0.items():  # Dict. with feature name-value pairs for each cell part:
                 # soma, apical_dendrite, basal_dendrite or axon
                 if any(sub_str in key1 for sub_str in ['axon', 'dendrite']):
