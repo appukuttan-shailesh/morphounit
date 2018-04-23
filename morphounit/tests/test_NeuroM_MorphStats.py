@@ -119,6 +119,9 @@ class NeuroM_MorphStats_Test(sciunit.Test):
             mod_prediction.update({cell_ID: dict0})
             del mod_prediction[key0]
 
+            print 'key0, cell_ID = \n\n', key0, cell_ID
+            print 'mod_prediction (inside) = \n', mod_prediction, '\n'
+
             if os.path.isdir(self.morp_path):
                 neuron_path = os.path.join(self.morp_path, cell_ID+'.swc')
             else:
@@ -151,6 +154,8 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                     dict1.update({"neurite_X_extent": neurite_X_extent})
                     dict1.update({"neurite_Y_extent": neurite_Y_extent})
                     dict1.update({"neurite_Z_extent": neurite_Z_extent})
+
+        print 'mod_prediction (outside) = \n', mod_prediction, '\n'
 
         dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
         for dict1 in mod_prediction.values():  # Set of cell's part-features dictionary pairs for each cell
