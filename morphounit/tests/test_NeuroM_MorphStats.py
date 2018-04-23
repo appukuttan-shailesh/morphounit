@@ -118,8 +118,8 @@ class NeuroM_MorphStats_Test(sciunit.Test):
             # Correcting cell's ID, given by some neuroM versions:
             # omitting enclosing directory's name  and file's extension
             cell_ID = (key0.split("/")[-1]).split(".")[0]
-            mod_prediction.update({cell_ID: dict0})
             del mod_prediction[key0]
+            mod_prediction.update({cell_ID: dict0})
 
             print 'key0, cell_ID = \n\n', key0, cell_ID
             print 'mod_prediction (inside) = \n', mod_prediction, '\n'
