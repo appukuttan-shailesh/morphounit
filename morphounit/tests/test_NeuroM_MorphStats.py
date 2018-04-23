@@ -117,15 +117,15 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
             print 'mod_prediction (inside) = \n', json.dumps(mod_prediction, sort_keys=True, indent=4), '\n'
 
+            # Adding two more neurite features:
+            # neurite-field diameter and neurite's bounding-box -X,Y,Z- extents
             if os.path.isdir(self.morp_path):
                 neuron_path = os.path.join(self.morp_path, cell_ID+'.swc')
             else:
                 neuron_path = self.morp_path
             neuron_model = nm.load_neuron(neuron_path)
-            # Adding two more neurite features:
-            # neurite-field diameter and neurite's bounding-box -X,Y,Z- extents
             for key1, dict1 in dict0.items():  # Dict. with feature name-value pairs for each cell part:
-                # soma, apical_dendrite, basal_dendrite or axon
+                                            # soma, apical_dendrite, basal_dendrite or axon
                 if any(sub_str in key1 for sub_str in ['axon', 'dendrite']):
                     cell_part = key1
                     filter = lambda neurite: neurite.type == getattr(nm.NeuriteType, cell_part)
@@ -135,7 +135,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                     # Compute the neurite's bounding-box -X,Y,Z- extents
                     neurite_X_extent, neurite_Y_extent, neurite_Z_extent = \
                         np.max(neurite_points[:, 0:3], axis=0) - np.min(neurite_points[:, 0:3], axis=0)
-
                     dict1.update({"neurite_X_extent": neurite_X_extent})
                     dict1.update({"neurite_Y_extent": neurite_Y_extent})
                     dict1.update({"neurite_Z_extent": neurite_Z_extent})
@@ -147,7 +146,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                         for idx_next in range(idx + 1, len_points):
                             point_dists.append(nm.morphmath.point_dist(
                                 neurite_points[idx], neurite_points[idx_next]))
-
                     dict1.update({"neurite_field_diameter": max(point_dists)})
 
         print 'mod_prediction (outside) = \n', json.dumps(mod_prediction, sort_keys=True, indent=4), '\n'
