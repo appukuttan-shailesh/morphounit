@@ -148,8 +148,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                                 neurite_points[idx], neurite_points[idx_next]))
                     dict1.update({"neurite_field_diameter": max(point_dists)})
 
-        print 'mod_prediction (outside) = \n', json.dumps(mod_prediction, sort_keys=True, indent=4), '\n'
-
         dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
         for dict1 in mod_prediction.values():  # Set of cell's part-features dictionary pairs for each cell
 
@@ -175,6 +173,8 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                         dict2[key] = dict(value=str(val) + ' um')
                     else:
                         dict2[key] = dict(value=str(val))
+
+        print 'mod_prediction (outside) = \n', json.dumps(mod_prediction, sort_keys=True, indent=4), '\n'
 
         # Saving the prediction in a formatted json-file
         pred_file = os.path.join(self.path_test_output, 'NeuroM_MorphStats_prediction.json')
