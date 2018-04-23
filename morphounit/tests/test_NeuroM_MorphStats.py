@@ -170,8 +170,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                     else:
                         dict2[key] = dict(value=str(val))
 
-        print 'mod_prediction (end) = \n', json.dumps(mod_prediction, sort_keys=True, indent=4), '\n'
-
         # Saving the prediction in a formatted json-file
         pred_file = os.path.join(self.path_test_output, 'NeuroM_MorphStats_prediction.json')
         fp = open(pred_file, 'w')
@@ -226,7 +224,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         """
         # Saving json file with scores
 
-        scores_json_file = os.path.join(self.path_test_output, 'scores_morpho_features_'+'cell.json')
+        scores_json_file = os.path.join(self.path_test_output, 'scores_summary_'+'cell.json')
         with open(scores_json_file, 'w') as fp:
             json.dump(score_feat_dict, fp, sort_keys=True, indent=4)
 
