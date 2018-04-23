@@ -82,3 +82,4 @@ class ScoresBars_MorphStats:
                                xlabel=score_label, x_fontsize=6, ylabel='morpho-features', y_fontsize=6, title=plt_title)
 
         return self.filepath_list
+
