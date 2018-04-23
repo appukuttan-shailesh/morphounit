@@ -115,13 +115,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
             except KeyError:
                 pass
 
-            # Correcting cell's ID, given by some neuroM versions:
-            # omitting enclosing directory's name  and file's extension
-            cell_ID = (key0.split("/")[-1]).split(".")[0]
-            del mod_prediction[key0]
-            mod_prediction.update({cell_ID: dict0})
-
-            print 'key0, cell_ID = ', key0, cell_ID, '\n\n'
             print 'mod_prediction (inside) = \n', json.dumps(mod_prediction, sort_keys=True, indent=4), '\n'
 
             if os.path.isdir(self.morp_path):
@@ -139,6 +132,14 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                     neurite_points = [p for p in nm.iter_neurites(neuron_model, mapping, filter)]
                     neurite_points = np.concatenate(neurite_points)
 
+                    # Compute the neurite's bounding-box -X,Y,Z- extents
+                    neurite_X_extent, neurite_Y_extent, neurite_Z_extent = \
+                        np.max(neurite_points[:, 0:3], axis=0) - np.min(neurite_points[:, 0:3], axis=0)
+
+                    dict1.update({"neurite_X_extent": neurite_X_extent})
+                    dict1.update({"neurite_Y_extent": neurite_Y_extent})
+                    dict1.update({"neurite_Z_extent": neurite_Z_extent})
+
                     # Compute the neurite-field diameter
                     len_points = len(neurite_points)
                     point_dists = list()
@@ -148,14 +149,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                                 neurite_points[idx], neurite_points[idx_next]))
 
                     dict1.update({"neurite_field_diameter": max(point_dists)})
-
-                    # Compute the neurite's bounding-box -X,Y,Z- extents
-                    neurite_X_extent, neurite_Y_extent, neurite_Z_extent = \
-                        np.max(neurite_points[:, 0:3], axis=0) - np.min(neurite_points[:, 0:3], axis=0)
-
-                    dict1.update({"neurite_X_extent": neurite_X_extent})
-                    dict1.update({"neurite_Y_extent": neurite_Y_extent})
-                    dict1.update({"neurite_Z_extent": neurite_Z_extent})
 
         print 'mod_prediction (outside) = \n', json.dumps(mod_prediction, sort_keys=True, indent=4), '\n'
 
