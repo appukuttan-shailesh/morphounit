@@ -103,6 +103,8 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         self.morp_path = model.morph_path
         mod_prediction = model.get_morph_feature_info()
 
+        print 'mod_prediction (start) = \n', mod_prediction, '\n'
+
         mapping = lambda section: section.points
         for key0, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs for each cell
 
