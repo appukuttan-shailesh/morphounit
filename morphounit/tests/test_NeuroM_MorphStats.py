@@ -103,8 +103,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         self.morp_path = model.morph_path
         mod_prediction = model.get_morph_feature_info()
 
-        print 'mod_prediction (start) = \n', json.dumps(mod_prediction, sort_keys=True, indent=4), '\n'
-
         mapping = lambda section: section.points
         for key0, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs for each cell
 
@@ -114,8 +112,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                 del dict0["axon"]["max_section_branch_order"]
             except KeyError:
                 pass
-
-            print 'mod_prediction (inside) = \n', json.dumps(mod_prediction, sort_keys=True, indent=4), '\n'
 
             # Adding two more neurite features:
             # neurite-field diameter and neurite's bounding-box -X,Y,Z- extents
@@ -174,7 +170,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                     else:
                         dict2[key] = dict(value=str(val))
 
-        print 'mod_prediction (outside) = \n', json.dumps(mod_prediction, sort_keys=True, indent=4), '\n'
+        print 'mod_prediction (end) = \n', json.dumps(mod_prediction, sort_keys=True, indent=4), '\n'
 
         # Saving the prediction in a formatted json-file
         pred_file = os.path.join(self.path_test_output, 'NeuroM_MorphStats_prediction.json')
@@ -228,6 +224,12 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         if not os.path.exists(self.path_test_output):
             os.makedirs(self.path_test_output)
         """
+        # Saving json file with scores
+
+        scores_json_file = os.path.join(self.path_test_output, 'scores_morpho_features_'+'cell.json')
+        with open(scores_json_file, 'w') as fp:
+            json.dump(score_feat_dict, fp, sort_keys=True, indent=4)
+
         # Saving table with results
         txt_table = mph_plots.TxtTable_MorphStats(self)
         table_files = txt_table.create()
