@@ -1,12 +1,11 @@
 import sciunit
 import sciunit.scores as sci_scores
 import morphounit.scores as mph_scores
-import morphounit.capabilities as mph_cap
+# import morphounit.capabilities as mph_cap
 import morphounit.plots as mph_plots
 
 import os
 import copy
-from datetime import datetime
 import json
 
 import neurom as nm
@@ -19,15 +18,14 @@ class NeuroM_MorphStats_Test(sciunit.Test):
     """Tests a set of cell's morphological features"""
     score_type = mph_scores.CombineZScores
 
-    def __init__(self, observation=None, name="Cell's morpho-stats test", base_directory='.'):
+    def __init__(self, observation=None, name="NeuroM MorphStats"):
 
         self.description = "Tests a set of cell's morpho-features in a digitally reconstructed neuron"
-        require_capabilities = (mph_cap.ProvidesMorphFeatureInfo,)
+        # require_capabilities = (mph_cap.ProvidesMorphFeatureInfo,)
 
         self.figures = []
         observation = self.format_data(observation)
         sciunit.Test.__init__(self, observation, name)
-        self.base_directory = base_directory
 
     # ----------------------------------------------------------------------
 
@@ -100,28 +98,34 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
     def generate_prediction(self, model, verbose=False):
         """Implementation of sciunit.Test.generate_prediction"""
-        self.model_version = model.version
 
+        self.path_test_output = model.morph_stats_output
+        self.morp_path = model.morph_path
         mod_prediction = model.get_morph_feature_info()
 
         mapping = lambda section: section.points
         for key0, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs for each cell
 
-            # Eliminating NeuroM's output about 'max_section_branch_order' for 'axons',
+            # Deleting NeuroM's output about 'max_section_branch_order' for 'axons',
             # as such experimental data is not provided
             try:
                 del dict0["axon"]["max_section_branch_order"]
             except KeyError:
                 pass
 
-            # Correcting cell's ID, by omitting enclosing directory's name and file's extension
-            cell_ID = (key0.split("/")[-1]).split(".")[-2]
+            # Correcting cell's ID, given by some neuroM versions:
+            # omitting enclosing directory's name  and file's extension
+            cell_ID = (key0.split("/")[-1]).split(".")[0]
             mod_prediction.update({cell_ID: dict0})
             del mod_prediction[key0]
 
+            if os.path.isdir(self.morp_path):
+                neuron_path = os.path.join(self.morp_path, cell_ID+'.swc')
+            else:
+                neuron_path = self.morp_path
+            neuron_model = nm.load_neuron(neuron_path)
             # Adding two more neurite features:
             # neurite-field diameter and neurite's bounding-box -X,Y,Z- extents
-            neuron_model = nm.load_neuron(key0)
             for key1, dict1 in dict0.items():  # Dict. with feature name-value pairs for each cell part:
                 # soma, apical_dendrite, basal_dendrite or axon
                 if any(sub_str in key1 for sub_str in ['axon', 'dendrite']):
@@ -174,7 +178,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                         dict2[key] = dict(value=str(val))
 
         # Saving the prediction in a formatted json-file
-        pred_file = os.path.join(model.pred_path, 'NeuroM_MorphStats_prediction.json')
+        pred_file = os.path.join(self.path_test_output, 'NeuroM_MorphStats_prediction.json')
         fp = open(pred_file, 'w')
         json.dump(mod_prediction, fp, sort_keys=True, indent=4)
         fp.close()
@@ -220,11 +224,11 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
         # ---------------------- Saving relevant results ----------------------
         # create output directory
-        self.path_test_output = os.path.join(self.base_directory, 'validation_results', 'neuroM_morph_softChecks',
-                                             self.model_version, datetime.now().strftime("%Y%m%d-%H%M%S"))
+        # Currently this is done inside the model Class
+        """
         if not os.path.exists(self.path_test_output):
             os.makedirs(self.path_test_output)
-
+        """
         # Saving table with results
         txt_table = mph_plots.TxtTable_MorphStats(self)
         table_files = txt_table.create()
