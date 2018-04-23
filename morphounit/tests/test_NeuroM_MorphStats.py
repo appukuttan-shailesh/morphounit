@@ -103,7 +103,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         self.morp_path = model.morph_path
         mod_prediction = model.get_morph_feature_info()
 
-        print 'mod_prediction (start) = \n', json.dump(mod_prediction, sort_keys=True, indent=4), '\n'
+        print 'mod_prediction (start) = \n', json.dumps(mod_prediction, sort_keys=True, indent=4), '\n'
 
         mapping = lambda section: section.points
         for key0, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs for each cell
@@ -122,7 +122,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
             mod_prediction.update({cell_ID: dict0})
 
             print 'key0, cell_ID = ', key0, cell_ID, '\n\n'
-            print 'mod_prediction (inside) = \n', json.dump(mod_prediction, sort_keys=True, indent=4), '\n'
+            print 'mod_prediction (inside) = \n', json.dumps(mod_prediction, sort_keys=True, indent=4), '\n'
 
             if os.path.isdir(self.morp_path):
                 neuron_path = os.path.join(self.morp_path, cell_ID+'.swc')
@@ -149,15 +149,15 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                                 neurite_points[idx], neurite_points[idx_next]))
 
                     dict1.update({"neurite_field_diameter": max(point_dists)})
-
+                    """
                     # Compute the neurite's bounding-box -X,Y,Z- extents
                     neurite_X_extent, neurite_Y_extent, neurite_Z_extent = \
                         np.max(neurite_points[:, 0:3], axis=0) - np.min(neurite_points[:, 0:3], axis=0)
                     dict1.update({"neurite_X_extent": neurite_X_extent})
                     dict1.update({"neurite_Y_extent": neurite_Y_extent})
                     dict1.update({"neurite_Z_extent": neurite_Z_extent})
-
-        print 'mod_prediction (outside) = \n', json.dump(mod_prediction, sort_keys=True, indent=4), '\n'
+                    """
+        print 'mod_prediction (outside) = \n', json.dumps(mod_prediction, sort_keys=True, indent=4), '\n'
 
         dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
         for dict1 in mod_prediction.values():  # Set of cell's part-features dictionary pairs for each cell
