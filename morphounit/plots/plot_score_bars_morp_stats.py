@@ -62,8 +62,8 @@ class ScoresBars_MorphStats:
         self.score_barplot(filepath=filepath_score_cells, scores_floats=scores_cell_floats, score_label=score_label,
                            xlabel=score_label, ylabel='Cell', title=plt_title)
         
-	"""        
-	# -------------------------- Plotting cell's feature scores ------------------------------------------------
+        """
+        # -------------------------- Plotting cell's feature scores ------------------------------------------------
         score_label = "|Z-Score|"
 
         scores_dict = self.testObj.score_feat_dict
@@ -80,6 +80,8 @@ class ScoresBars_MorphStats:
 
             self.score_barplot(filepath=filepath_score_feat, scores_floats=scores_feat_floats, score_label=score_label,
                                xlabel=score_label, x_fontsize=6, ylabel='morpho-features', y_fontsize=6, title=plt_title)
+
+            plt.clf()
 
         return self.filepath_list
 

@@ -205,13 +205,13 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                     del score_feat_dict[key0][key1][key2]["value"]
                     score_feat_dict[key0][key1][key2]["score"] = score_feat_value
 
-            score_cell_dict[key0] = {"Mean Z-score": mph_scores.CombineZScores.compute(scores_cell_list).score}
+            score_cell_dict[key0] = {"Mean |Z-score|": mph_scores.CombineZScores.compute(scores_cell_list).score}
 
         self.score_cell_dict = score_cell_dict
         self.score_feat_dict = score_feat_dict
 
         # Taking the average of the cell's scores as the overall score for the Test
-        mean_score = np.mean([dict1["Mean Z-score"] for dict1 in score_cell_dict.values()])
+        mean_score = np.mean([dict1["Mean |Z-score|"] for dict1 in score_cell_dict.values()])
         self.score = mph_scores.CombineZScores(mean_score)
         self.score.description = "A simple Z-score"
 
