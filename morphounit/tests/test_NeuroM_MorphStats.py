@@ -139,7 +139,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                     neurite_points = [p for p in nm.iter_neurites(neuron_model, mapping, filter)]
                     neurite_points = np.concatenate(neurite_points)
 
-                    """
+
                     # Compute the neurite-field diameter
                     len_points = len(neurite_points)
                     point_dists = list()
@@ -149,7 +149,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                                 neurite_points[idx], neurite_points[idx_next]))
 
                     dict1.update({"neurite_field_diameter": max(point_dists)})
-                    """
+
                     # Compute the neurite's bounding-box -X,Y,Z- extents
                     neurite_X_extent, neurite_Y_extent, neurite_Z_extent = \
                         np.max(neurite_points[:, 0:3], axis=0) - np.min(neurite_points[:, 0:3], axis=0)
