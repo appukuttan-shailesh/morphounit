@@ -2,6 +2,7 @@
 ## https://github.com/appukuttan-shailesh/basalunit.git
 
 from tabulate import tabulate
+import quantities
 import os
 
 
@@ -54,9 +55,9 @@ class TxtTable_MorphStats:
                                                         # apical_dendrite or basal_dendrite
                 for key_2 in self.testObj.prediction[key_0][key_1]:  # features name keys
 
-                    o_mean = self.testObj.observation[cell_t][key_1][key_2]["mean"]
-                    o_std = self.testObj.observation[cell_t][key_1][key_2]["std"]
-                    p_value = self.testObj.prediction[key_0][key_1][key_2]["value"]
+                    o_mean = quant_to_str(self.testObj.observation[cell_t][key_1][key_2]["mean"])
+                    o_std = quant_to_str(self.testObj.observation[cell_t][key_1][key_2]["std"])
+                    p_value = quant_to_str(self.testObj.prediction[key_0][key_1][key_2]["value"])
                     score = self.testObj.score_feat_dict[key_0][key_1][key_2]["score"]
                     feat_name = "{}.{}".format(key_1, key_2)
                     row_list.append([feat_name, o_mean, o_std, p_value, score])
@@ -64,6 +65,19 @@ class TxtTable_MorphStats:
             self.score_TxtTable(filepath=filepath_summary_cell, cell_ID=tab_title,
                                 score_label=score_label, row_list=row_list)
 
-        print row_list
-
         return self.filepath_list
+
+    def quant_to_str(self, value_quant):
+
+        if value_quant.units == quantities.dimensionless:
+            value_str = value_quant.item()
+        else:
+            value_str = str(value_quant)
+
+        return value_str
+
+
+
+
+
+
