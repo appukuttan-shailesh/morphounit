@@ -10,7 +10,7 @@ class jsonFile_MorphStats:
     def __init__(self, testObj, dictData, prefix_name):
 
         self.testObj = testObj
-        self.dictData = dict
+        self.dictData = dictData
         self.prefix_filename = prefix_name
         self.filepath_list = list()
 
