@@ -35,7 +35,7 @@ class TxtTable_MorphStats:
         dataFile.write("Model Name: %s\n\n" % cell_ID)
 
         header_list = ["Morphological feature", "Expt. mean", "Expt. std", "Model value", "Score"]
-        dataFile.write(tabulate(row_list, headers=header_list, tablefmt='orgtbl', stralign='left'))
+        dataFile.write(tabulate(row_list, headers=header_list, tablefmt='orgtbl', stralign='right'))
         dataFile.write("\n-----------------------------------------------------------------------------------------"
                        "------------\n\n")
 

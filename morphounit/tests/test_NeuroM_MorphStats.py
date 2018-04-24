@@ -169,7 +169,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                     else:
                         dict2[key] = dict(value=str(val))
 
-        self.prediction_mod = mod_prediction
+        self.prediction_txt = copy.deepcopy(mod_prediction)
 
         prediction = self.format_data(mod_prediction)
         return prediction
@@ -218,7 +218,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
             os.makedirs(self.path_test_output)
         """
         # Saving json file with model predictions
-        json_pred_file = mph_plots.jsonFile_MorphStats(testObj=self, dictData=self.prediction_mod,
+        json_pred_file = mph_plots.jsonFile_MorphStats(testObj=self, dictData=self.prediction_txt,
                                                        prefix_name="prediction_summary_")
         json_pred_files = json_pred_file.create()
         self.figures.extend(json_pred_files)
