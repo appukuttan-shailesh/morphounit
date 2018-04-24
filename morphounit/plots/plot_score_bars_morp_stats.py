@@ -7,10 +7,7 @@ matplotlib.use('Agg')  # Force matplotlib to not use any Xwindows backend.
 
 from matplotlib import pyplot as plt
 import seaborn as sns
-
 import os
-
-#==============================================================================
 
 
 class ScoresBars_MorphStats:
@@ -26,6 +23,8 @@ class ScoresBars_MorphStats:
 
     def score_barplot(self, filepath=None, scores_floats={}, score_label=None,
                       xlabel=None, x_fontsize=5, ylabel=None, y_fontsize=5, title=None):
+
+        plt.close('all')
 
         # pal = sns.cubehelix_palette(len(scores_floats))
         pal = sns.color_palette('Reds', len(scores_floats))
@@ -80,8 +79,6 @@ class ScoresBars_MorphStats:
 
             self.score_barplot(filepath=filepath_score_feat, scores_floats=scores_feat_floats, score_label=score_label,
                                xlabel=score_label, x_fontsize=6, ylabel='morpho-features', y_fontsize=6, title=plt_title)
-
-            plt.clf()
 
         return self.filepath_list
 

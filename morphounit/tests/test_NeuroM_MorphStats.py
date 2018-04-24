@@ -12,7 +12,6 @@ import neurom as nm
 import numpy as np
 import quantities
 
-# ==============================================================================
 
 class NeuroM_MorphStats_Test(sciunit.Test):
     """Tests a set of cell's morphological features"""
@@ -217,13 +216,12 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
         # ---------------------- Saving relevant results ----------------------
         # create output directory
-        # Currently this is done inside the model Class
+        # Currently done inside the model Class
         """
         if not os.path.exists(self.path_test_output):
             os.makedirs(self.path_test_output)
         """
         # Saving json file with scores
-
         scores_json_file = os.path.join(self.path_test_output, 'scores_summary_'+'cell.json')
         with open(scores_json_file, 'w') as fp:
             json.dump(score_feat_dict, fp, sort_keys=True, indent=4)
