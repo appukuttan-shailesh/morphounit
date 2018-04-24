@@ -222,7 +222,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
             os.makedirs(self.path_test_output)
         """
         # Saving json file with scores
-        json_file = mph_plots.TxtJson_MorphStats(self)
+        json_file = mph_plots.jsonFile_MorphStats(self)
         json_files = json_file.create()
         self.figures.extend(json_files)
 

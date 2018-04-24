@@ -2,7 +2,7 @@ import json
 import os
 
 
-class TxtJson_MorphStats:
+class jsonFile_MorphStats:
     """
     Displays data as a dictionary inside a json file
     """
