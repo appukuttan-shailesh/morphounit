@@ -17,6 +17,15 @@ class TxtTable_MorphStats:
         self.prefix_filename_cell = "score_summary_"
         self.filepath_list = list()
 
+    def quant_to_str(self, value_quant):
+
+        if value_quant.units == quantities.dimensionless:
+            value_str = str(value_quant.item())
+        else:
+            value_str = str(value_quant)
+
+        return value_str
+
     def score_TxtTable(self, filepath=None, cell_ID=None, score_label=None, row_list=[]):
 
         dataFile = open(filepath, 'w')
@@ -66,18 +75,3 @@ class TxtTable_MorphStats:
                                 score_label=score_label, row_list=row_list)
 
         return self.filepath_list
-
-    def quant_to_str(self, value_quant):
-
-        if value_quant.units == quantities.dimensionless:
-            value_str = value_quant.item()
-        else:
-            value_str = str(value_quant)
-
-        return value_str
-
-
-
-
-
-
