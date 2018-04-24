@@ -51,7 +51,7 @@ class ScoresBars_MorphStats:
     def create(self):
 
         # --------------------------- Plotting overall cell scores -------------------------------------------------
-
+        """
         filepath_score_cells = os.path.join(self.testObj.path_test_output, self.prefix_filename_cells + '.pdf')
         score_label = "A mean |Z-score|"
         plt_title = "Cells scores summary"
@@ -62,7 +62,7 @@ class ScoresBars_MorphStats:
 
         self.score_barplot(filepath=filepath_score_cells, scores_floats=scores_cell_floats, score_label=score_label,
                            xlabel=score_label, ylabel='Cell', title=plt_title)
-        
+        """
         # -------------------------- Plotting cell's feature scores ------------------------------------------------
 
         score_label = "|Z-Score|"
