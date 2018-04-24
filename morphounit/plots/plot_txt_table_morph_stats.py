@@ -4,8 +4,6 @@
 from tabulate import tabulate
 import os
 
-# ==============================================================================
-
 
 class TxtTable_MorphStats:
     """
@@ -52,7 +50,8 @@ class TxtTable_MorphStats:
 
             row_list = []
 
-            for key_1 in self.testObj.prediction[key_0]:  # cell's part keys: soma, axon, apical_dendrite or basal_dendrite
+            for key_1 in self.testObj.prediction[key_0]:  # cell's part keys: soma, axon,
+                                                        # apical_dendrite or basal_dendrite
                 for key_2 in self.testObj.prediction[key_0][key_1]:  # features name keys
 
                     o_mean = self.testObj.observation[cell_t][key_1][key_2]["mean"]
@@ -64,5 +63,7 @@ class TxtTable_MorphStats:
 
             self.score_TxtTable(filepath=filepath_summary_cell, cell_ID=tab_title,
                                 score_label=score_label, row_list=row_list)
+
+        print row_list
 
         return self.filepath_list

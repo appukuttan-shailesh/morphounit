@@ -24,7 +24,7 @@ class ScoresBars_MorphStats:
     def score_barplot(self, filepath=None, scores_floats={}, score_label=None,
                       xlabel=None, x_fontsize=5, ylabel=None, y_fontsize=5, title=None):
 
-        plt.close('all')
+        fig = plt.figure()
 
         # pal = sns.cubehelix_palette(len(scores_floats))
         pal = sns.color_palette('Reds', len(scores_floats))
@@ -43,6 +43,8 @@ class ScoresBars_MorphStats:
 
         plt.savefig(filepath, dpi=600, )
         self.filepath_list.append(filepath)
+
+        plt.close(fig)
 
         return self.filepath_list
 
@@ -77,6 +79,7 @@ class ScoresBars_MorphStats:
                     feat_name = "{}.{}".format(key_1, key_2)
                     scores_feat_floats[feat_name] = abs(scores_dict[key_0][key_1][key_2]["score"])
 
+            plt.close('all')
             self.score_barplot(filepath=filepath_score_feat, scores_floats=scores_feat_floats, score_label=score_label,
                                xlabel=score_label, x_fontsize=6, ylabel='morpho-features', y_fontsize=6, title=plt_title)
 
