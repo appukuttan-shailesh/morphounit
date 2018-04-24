@@ -200,7 +200,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
             Mean_Zscore_dict = {"A mean |Z-score|": mph_scores.CombineZScores.compute(scores_cell_list).score}
             score_feat_dict[key0].update(Mean_Zscore_dict)
-            score_cell_dict[key0] = {Mean_Zscore_dict}
+            score_cell_dict[key0] = Mean_Zscore_dict
 
         self.score_cell_dict = score_cell_dict
         self.score_feat_dict = score_feat_dict
