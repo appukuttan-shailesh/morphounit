@@ -169,13 +169,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                     else:
                         dict2[key] = dict(value=str(val))
 
-        # Saving the prediction in a formatted json-file
-        pred_file = os.path.join(self.path_test_output, 'NeuroM_MorphStats_prediction.json')
-        fp = open(pred_file, 'w')
-        json.dump(mod_prediction, fp, sort_keys=True, indent=4)
-        fp.close()
-
-        self.figures.append(pred_file)
+        self.prediction_mod = mod_prediction
 
         prediction = self.format_data(mod_prediction)
         return prediction
@@ -223,10 +217,17 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         if not os.path.exists(self.path_test_output):
             os.makedirs(self.path_test_output)
         """
+        # Saving json file with model predictions
+        json_pred_file = mph_plots.jsonFile_MorphStats(testObj=self, dictData=self.prediction_mod,
+                                                       prefix_name="prediction_summary_")
+        json_pred_files = json_pred_file.create()
+        self.figures.extend(json_pred_files)
+
         # Saving json file with scores
-        json_file = mph_plots.jsonFile_MorphStats(self)
-        json_files = json_file.create()
-        self.figures.extend(json_files)
+        json_scores_file = mph_plots.jsonFile_MorphStats(testObj=self, dictData=self.score_feat_dict,
+                                                         prefix_name="score_summary_")
+        json_scores_files = json_scores_file.create()
+        self.figures.extend(json_scores_files)
 
         # Saving table with results
         txt_table = mph_plots.TxtTable_MorphStats(self)
