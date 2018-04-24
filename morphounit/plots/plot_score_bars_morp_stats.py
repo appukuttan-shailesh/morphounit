@@ -75,7 +75,10 @@ class ScoresBars_MorphStats:
 
             scores_feat_floats = dict()
             for key_1 in scores_dict[key_0]:  # cell's part keys: soma, axon, apical_dendrite or basal_dendrite
+                if 'score' in key1:  # Excluding the overall cell's score
+                    continue
                 for key_2 in scores_dict[key_0][key_1]:  # features name keys
+
                     feat_name = "{}.{}".format(key_1, key_2)
                     scores_feat_floats[feat_name] = abs(scores_dict[key_0][key_1][key_2]["score"])
 
