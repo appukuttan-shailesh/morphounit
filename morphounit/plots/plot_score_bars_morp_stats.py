@@ -52,7 +52,7 @@ class ScoresBars_MorphStats:
 
         # --------------------------- Plotting overall cell scores -------------------------------------------------
         """
-        filepath_score_cells = os.path.join(self.testObj.path_test_output, self.prefix_filename_cells + '.png')
+        filepath_score_cells = os.path.join(self.testObj.path_test_output, self.prefix_filename_cells + '.pdf')
         score_label = "Mean Z-score"
         plt_title = "Cells scores summary"
 
@@ -71,7 +71,7 @@ class ScoresBars_MorphStats:
         for key_0 in scores_dict:  # cell ID keys
             plt_title = key_0
             filepath_score_feat = \
-                os.path.join(self.testObj.path_test_output, self.prefix_filename_cell_feat + plt_title + '.png')
+                os.path.join(self.testObj.path_test_output, self.prefix_filename_cell_feat + plt_title + '.pdf')
 
             scores_feat_floats = dict()
             for key_1 in scores_dict[key_0]:  # cell's part keys: soma, axon, apical_dendrite or basal_dendrite
