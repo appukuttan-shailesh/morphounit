@@ -64,10 +64,11 @@ class TxtTable_MorphStats:
                                                         # apical_dendrite or basal_dendrite
                 for key_2 in self.testObj.prediction[key_0][key_1]:  # features name keys
 
-                    o_mean = quant_to_str(self.testObj.observation[cell_t][key_1][key_2]["mean"])
-                    o_std = quant_to_str(self.testObj.observation[cell_t][key_1][key_2]["std"])
-                    p_value = quant_to_str(self.testObj.prediction[key_0][key_1][key_2]["value"])
+                    o_mean = self.quant_to_str(self.testObj.observation[cell_t][key_1][key_2]["mean"])
+                    o_std = self.quant_to_str(self.testObj.observation[cell_t][key_1][key_2]["std"])
+                    p_value = self.quant_to_str(self.testObj.prediction[key_0][key_1][key_2]["value"])
                     score = self.testObj.score_feat_dict[key_0][key_1][key_2]["score"]
+
                     feat_name = "{}.{}".format(key_1, key_2)
                     row_list.append([feat_name, o_mean, o_std, p_value, score])
 
