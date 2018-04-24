@@ -49,7 +49,7 @@ class TxtTable_MorphStats:
 
     def create(self):
 
-        score_label = "Mean |Z-score|"
+        score_label = "A mean |Z-score|"
 
         cell_t = self.testObj.observation.keys()[0]  # Cell type
         for key_0 in self.testObj.prediction:  # cell ID keys

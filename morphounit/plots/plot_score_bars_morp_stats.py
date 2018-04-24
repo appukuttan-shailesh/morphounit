@@ -17,8 +17,8 @@ class ScoresBars_MorphStats:
 
     def __init__(self, testObj):
         self.testObj = testObj
-        self.prefix_filename_cells = "score_barPlots_cells"
-        self.prefix_filename_cell_feat = "score_barPlots_"
+        self.prefix_filename_cells = "score_bars_cells"
+        self.prefix_filename_cell_feat = "score_bars_morpho_features_"
         self.filepath_list = list()
 
     def score_barplot(self, filepath=None, scores_floats={}, score_label=None,
@@ -51,9 +51,9 @@ class ScoresBars_MorphStats:
     def create(self):
 
         # --------------------------- Plotting overall cell scores -------------------------------------------------
-        """
+
         filepath_score_cells = os.path.join(self.testObj.path_test_output, self.prefix_filename_cells + '.pdf')
-        score_label = "Mean Z-score"
+        score_label = "A mean |Z-score|"
         plt_title = "Cells scores summary"
 
         scores_cell_floats = dict.fromkeys(self.testObj.score_cell_dict.keys(), [])
@@ -63,8 +63,8 @@ class ScoresBars_MorphStats:
         self.score_barplot(filepath=filepath_score_cells, scores_floats=scores_cell_floats, score_label=score_label,
                            xlabel=score_label, ylabel='Cell', title=plt_title)
         
-        """
         # -------------------------- Plotting cell's feature scores ------------------------------------------------
+
         score_label = "|Z-Score|"
 
         scores_dict = self.testObj.score_feat_dict
