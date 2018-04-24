@@ -17,8 +17,8 @@ class ScoresBars_MorphStats:
 
     def __init__(self, testObj):
         self.testObj = testObj
-        self.prefix_filename_cells = "score_bars_cells"
-        self.prefix_filename_cell_feat = "score_bars_morpho_features_"
+        self.prefix_filename_cells = "score_barPlots_cells"
+        self.prefix_filename_cell_feat = "score_barPlots_"
         self.filepath_list = list()
 
     def score_barplot(self, filepath=None, scores_floats={}, score_label=None,
