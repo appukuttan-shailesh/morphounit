@@ -5,7 +5,7 @@ except ImportError:
 
 setup(
     name='morphounit',
-    version='0.3',
+    version='0.4',
     author='Shailesh Appukuttan, Pedro Garcia',
     author_email='shailesh.appukuttan@unic.cnrs-gif.fr, pedro.garcia@unic.cnrs-gif.fr',
     packages=['morphounit',
@@ -14,7 +14,6 @@ setup(
               'morphounit.scores',
               'morphounit.plots'],
     url='https://github.com/appukuttan-shailesh/morphounit',
-    download_url = 'https://github.com/appukuttan-shailesh/morphounit/archive/0.2.tar.gz', 
     keywords = ['morphology', 'structure', 'circuit', 'testing', 'validation framework'],
     license='MIT',
     description='A SciUnit library for data-driven testing of neuronal morphologies.',
