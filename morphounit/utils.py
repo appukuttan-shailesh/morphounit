@@ -75,11 +75,11 @@ class NeuroM_MorphStats(sciunit.Model):
             cell_ID = (key0.split("/")[-1]).split(".")[0]
             del mod_prediction[key0]
             mod_prediction.update({cell_ID: dict0})
-
+        """
         # Saving NeuroM's morph_stats output in a formatted json-file
         with open(self.output_file, 'w') as fp:
             json.dump(mod_prediction, fp, sort_keys=True, indent=4)
-
+        """
         return mod_prediction
 
     def get_morph_feature_info(self):

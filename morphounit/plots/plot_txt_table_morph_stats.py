@@ -14,7 +14,7 @@ class TxtTable_MorphStats:
     def __init__(self, testObj):
 
         self.testObj = testObj
-        self.prefix_filename_cell = "score_summary_"
+        self.prefix_filename_cell = "results_summary_"
         self.filepath_list = list()
 
     def quant_to_str(self, value_quant):
