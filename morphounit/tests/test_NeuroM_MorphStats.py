@@ -12,7 +12,6 @@ import neurom as nm
 import numpy as np
 import quantities
 
-# ==============================================================================
 
 class NeuroM_MorphStats_Test(sciunit.Test):
     """Tests a set of cell's morphological features"""
@@ -113,27 +112,28 @@ class NeuroM_MorphStats_Test(sciunit.Test):
             except KeyError:
                 pass
 
-            # Correcting cell's ID, given by some neuroM versions:
-            # omitting enclosing directory's name  and file's extension
-            cell_ID = (key0.split("/")[-1]).split(".")[0]
-            mod_prediction.update({cell_ID: dict0})
-            del mod_prediction[key0]
-
+            # Adding two more neurite features:
+            # neurite-field diameter and neurite's bounding-box -X,Y,Z- extents
             if os.path.isdir(self.morp_path):
                 neuron_path = os.path.join(self.morp_path, cell_ID+'.swc')
             else:
                 neuron_path = self.morp_path
             neuron_model = nm.load_neuron(neuron_path)
-            # Adding two more neurite features:
-            # neurite-field diameter and neurite's bounding-box -X,Y,Z- extents
             for key1, dict1 in dict0.items():  # Dict. with feature name-value pairs for each cell part:
-                # soma, apical_dendrite, basal_dendrite or axon
+                                            # soma, apical_dendrite, basal_dendrite or axon
                 if any(sub_str in key1 for sub_str in ['axon', 'dendrite']):
                     cell_part = key1
                     filter = lambda neurite: neurite.type == getattr(nm.NeuriteType, cell_part)
                     neurite_points = [p for p in nm.iter_neurites(neuron_model, mapping, filter)]
                     neurite_points = np.concatenate(neurite_points)
-                    """
+
+                    # Compute the neurite's bounding-box -X,Y,Z- extents
+                    neurite_X_extent, neurite_Y_extent, neurite_Z_extent = \
+                        np.max(neurite_points[:, 0:3], axis=0) - np.min(neurite_points[:, 0:3], axis=0)
+                    dict1.update({"neurite_X_extent": neurite_X_extent})
+                    dict1.update({"neurite_Y_extent": neurite_Y_extent})
+                    dict1.update({"neurite_Z_extent": neurite_Z_extent})
+
                     # Compute the neurite-field diameter
                     len_points = len(neurite_points)
                     point_dists = list()
@@ -141,15 +141,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                         for idx_next in range(idx + 1, len_points):
                             point_dists.append(nm.morphmath.point_dist(
                                 neurite_points[idx], neurite_points[idx_next]))
-
                     dict1.update({"neurite_field_diameter": max(point_dists)})
-                    """
-                    # Compute the neurite's bounding-box -X,Y,Z- extents
-                    neurite_X_extent, neurite_Y_extent, neurite_Z_extent = \
-                        np.max(neurite_points[:, 0:3], axis=0) - np.min(neurite_points[:, 0:3], axis=0)
-                    dict1.update({"neurite_X_extent": neurite_X_extent})
-                    dict1.update({"neurite_Y_extent": neurite_Y_extent})
-                    dict1.update({"neurite_Z_extent": neurite_Z_extent})
 
         dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
         for dict1 in mod_prediction.values():  # Set of cell's part-features dictionary pairs for each cell
@@ -177,13 +169,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                     else:
                         dict2[key] = dict(value=str(val))
 
-        # Saving the prediction in a formatted json-file
-        pred_file = os.path.join(self.path_test_output, 'NeuroM_MorphStats_prediction.json')
-        fp = open(pred_file, 'w')
-        json.dump(mod_prediction, fp, sort_keys=True, indent=4)
-        fp.close()
-
-        self.figures.append(pred_file)
+        self.prediction_txt = copy.deepcopy(mod_prediction)
 
         prediction = self.format_data(mod_prediction)
         return prediction
@@ -212,23 +198,37 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                     del score_feat_dict[key0][key1][key2]["value"]
                     score_feat_dict[key0][key1][key2]["score"] = score_feat_value
 
-            score_cell_dict[key0] = {"Mean Z-score": mph_scores.CombineZScores.compute(scores_cell_list).score}
+            Mean_Zscore_dict = {"A mean |Z-score|": mph_scores.CombineZScores.compute(scores_cell_list).score}
+            score_feat_dict[key0].update(Mean_Zscore_dict)
+            score_cell_dict[key0] = Mean_Zscore_dict
 
         self.score_cell_dict = score_cell_dict
         self.score_feat_dict = score_feat_dict
 
         # Taking the average of the cell's scores as the overall score for the Test
-        mean_score = np.mean([dict1["Mean Z-score"] for dict1 in score_cell_dict.values()])
+        mean_score = np.mean([dict1["A mean |Z-score|"] for dict1 in score_cell_dict.values()])
         self.score = mph_scores.CombineZScores(mean_score)
-        self.score.description = "A simple Z-score"
+        self.score.description = "A mean |Z-score|"
 
         # ---------------------- Saving relevant results ----------------------
         # create output directory
-        # Currently this is done inside the model Class
+        # Currently done inside the model Class
         """
         if not os.path.exists(self.path_test_output):
             os.makedirs(self.path_test_output)
         """
+        # Saving json file with model predictions
+        json_pred_file = mph_plots.jsonFile_MorphStats(testObj=self, dictData=self.prediction_txt,
+                                                       prefix_name="prediction_summary_")
+        json_pred_files = json_pred_file.create()
+        self.figures.extend(json_pred_files)
+
+        # Saving json file with scores
+        json_scores_file = mph_plots.jsonFile_MorphStats(testObj=self, dictData=self.score_feat_dict,
+                                                         prefix_name="score_summary_")
+        json_scores_files = json_scores_file.create()
+        self.figures.extend(json_scores_files)
+
         # Saving table with results
         txt_table = mph_plots.TxtTable_MorphStats(self)
         table_files = txt_table.create()
@@ -244,3 +244,4 @@ class NeuroM_MorphStats_Test(sciunit.Test):
     def bind_score(self, score, model, observation, prediction):
         score.related_data["figures"] = self.figures
         return score
+
