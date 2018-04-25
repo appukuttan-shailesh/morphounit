@@ -225,7 +225,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
         # Saving json file with scores
         json_scores_file = mph_plots.jsonFile_MorphStats(testObj=self, dictData=self.score_feat_dict,
-                                                         prefix_name="score_summary_")
+                                                         prefix_name="scores_summary_")
         json_scores_files = json_scores_file.create()
         self.figures.extend(json_scores_files)
 
@@ -244,4 +244,3 @@ class NeuroM_MorphStats_Test(sciunit.Test):
     def bind_score(self, score, model, observation, prediction):
         score.related_data["figures"] = self.figures
         return score
-
