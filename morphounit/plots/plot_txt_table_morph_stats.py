@@ -4,6 +4,7 @@
 from tabulate import tabulate
 import quantities
 import os
+import json
 
 
 class TxtTable_MorphStats:
@@ -51,8 +52,11 @@ class TxtTable_MorphStats:
 
         score_label = "A mean |Z-score|"
 
+        score_feat_dict = json.dumps(self.testObj.score_feat_dict, sort_keys=True, indent=4)
+        print "inside = \n\n ", score_feat_dict
+
         cell_t = self.testObj.observation.keys()[0]  # Cell type
-        for key_0 in self.testObj.prediction:  # cell ID keys
+        for key_0 in score_feat_dict:  # cell ID keys
 
             tab_title = key_0
             filepath_summary_cell = \
@@ -60,9 +64,12 @@ class TxtTable_MorphStats:
 
             row_list = []
 
-            for key_1 in self.testObj.prediction[key_0]:  # cell's part keys: soma, axon,
-                                                        # apical_dendrite or basal_dendrite
-                for key_2 in self.testObj.prediction[key_0][key_1]:  # features name keys
+            for key_1 in score_feat_dict[key_0]:  # cell's part keys: soma, axon,
+                                                    # apical_dendrite or basal_dendrite
+                if 'score' in key_1:  # Excluding the overall cell's score
+                    continue
+
+                for key_2 in score_feat_dict[key_0][key_1]:  # features name keys
 
                     o_mean = self.quant_to_str(self.testObj.observation[cell_t][key_1][key_2]["mean"])
                     o_std = self.quant_to_str(self.testObj.observation[cell_t][key_1][key_2]["std"])
@@ -71,6 +78,8 @@ class TxtTable_MorphStats:
 
                     feat_name = "{}.{}".format(key_1, key_2)
                     row_list.append([feat_name, o_mean, o_std, p_value, score])
+
+                    print [feat_name, o_mean, o_std, p_value, score], '\n\n'
 
             self.score_TxtTable(filepath=filepath_summary_cell, cell_ID=tab_title,
                                 score_label=score_label, row_list=row_list)

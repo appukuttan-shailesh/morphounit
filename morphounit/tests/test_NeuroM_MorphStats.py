@@ -186,22 +186,25 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         cell_t = observation.keys()[0]  # Cell type
 
         score_cell_dict = dict.fromkeys([key0 for key0 in prediction.keys()], [])
-        score_feat_dict = copy.deepcopy(prediction)
-        for key0 in score_feat_dict:  # cell_ID keys
+        obs_features = copy.deepcopy(observation.values())[0]  # only features registered in observation data are tested
+        score_feat_dict = dict()
+        for key0 in prediction:  # cell_ID keys
+
+            score_feat_dict.update({key0: obs_features})
             scores_cell_list = list()
             for key1 in score_feat_dict[key0]:  # cell's part: soma, axon, apical_dendrite or basal_dendrite
                 for key2 in score_feat_dict[key0][key1]:  # features names
-                    if key2 in observation[cell_t][key1]:
+
                         score_feat_value = sci_scores.ZScore.compute(observation[cell_t][key1][key2],
                                                                      prediction[key0][key1][key2]).score
                         scores_cell_list.extend([score_feat_value])
 
-                        del score_feat_dict[key0][key1][key2]["value"]
-                        score_feat_dict[key0][key1][key2]["score"] = score_feat_value
+                        score_feat_dict[key0][key1][key2] = {"score": score_feat_value}
 
             Mean_Zscore_dict = {"A mean |Z-score|": mph_scores.CombineZScores.compute(scores_cell_list).score}
             score_feat_dict[key0].update(Mean_Zscore_dict)
             score_cell_dict[key0] = Mean_Zscore_dict
+
 
         self.score_cell_dict = score_cell_dict
         self.score_feat_dict = score_feat_dict
@@ -231,6 +234,8 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         self.figures.extend(json_scores_files)
 
         # Saving table with results
+        print "outside = \n\n ", json.dumps(self.score_feat_dict, sort_keys=True, indent=4)
+
         txt_table = mph_plots.TxtTable_MorphStats(self)
         table_files = txt_table.create()
         self.figures.extend(table_files)
