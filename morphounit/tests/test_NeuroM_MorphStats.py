@@ -127,7 +127,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                     neurite_points = [p for p in nm.iter_neurites(neuron_model, mapping, filter)]
                     neurite_points = np.concatenate(neurite_points)
 
-                    # Compute the neurite's bounding-box -X,Y,Z- extents
+                    # Compute the neurite's bounding-box -Z- extents
                     neurite_X_extent, neurite_Y_extent, neurite_Z_extent = \
                         np.max(neurite_points[:, 0:3], axis=0) - np.min(neurite_points[:, 0:3], axis=0)
                     dict1.update({"neurite_X_extent": neurite_X_extent})
@@ -191,12 +191,13 @@ class NeuroM_MorphStats_Test(sciunit.Test):
             scores_cell_list = list()
             for key1 in score_feat_dict[key0]:  # cell's part: soma, axon, apical_dendrite or basal_dendrite
                 for key2 in score_feat_dict[key0][key1]:  # features names
-                    score_feat_value = sci_scores.ZScore.compute(observation[cell_t][key1][key2],
-                                                           prediction[key0][key1][key2]).score
-                    scores_cell_list.extend([score_feat_value])
+                    if key2 in observation[cell_t][key1]:
+                        score_feat_value = sci_scores.ZScore.compute(observation[cell_t][key1][key2],
+                                                                     prediction[key0][key1][key2]).score
+                        scores_cell_list.extend([score_feat_value])
 
-                    del score_feat_dict[key0][key1][key2]["value"]
-                    score_feat_dict[key0][key1][key2]["score"] = score_feat_value
+                        del score_feat_dict[key0][key1][key2]["value"]
+                        score_feat_dict[key0][key1][key2]["score"] = score_feat_value
 
             Mean_Zscore_dict = {"A mean |Z-score|": mph_scores.CombineZScores.compute(scores_cell_list).score}
             score_feat_dict[key0].update(Mean_Zscore_dict)
