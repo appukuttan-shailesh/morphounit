@@ -234,8 +234,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         self.figures.extend(json_scores_files)
 
         # Saving table with results
-        print "outside = \n\n ", json.dumps(self.score_feat_dict, sort_keys=True, indent=4)
-
         txt_table = mph_plots.TxtTable_MorphStats(self)
         table_files = txt_table.create()
         self.figures.extend(table_files)
