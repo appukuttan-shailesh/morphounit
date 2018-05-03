@@ -62,7 +62,7 @@ class TxtTable_MorphStats:
             row_list = []
 
             for key_1 in sorted(self.testObj.score_feat_dict[key_0]):  # cell's part keys: soma, axon,
-                                                    # apical_dendrite or basal_dendrite
+                                                                        # apical_dendrite or basal_dendrite
                 if 'score' in key_1:  # Excluding the overall cell's score
                     continue
 
