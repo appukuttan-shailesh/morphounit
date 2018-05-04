@@ -53,7 +53,7 @@ class TxtTable_MorphStats:
         score_label = "A mean |Z-score|"
 
         cell_t = self.testObj.observation.keys()[0]  # Cell type
-        for key_0 in self.testObj.score_feat_dict:  # cell ID keys
+        for key_0 in sorted(self.testObj.score_feat_dict):  # cell ID keys
 
             tab_title = key_0
             filepath_summary_cell = \
