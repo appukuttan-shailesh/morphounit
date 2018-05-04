@@ -6,10 +6,8 @@ import morphounit.plots as mph_plots
 
 import os
 import copy
-import json
 
 import neurom as nm
-
 import numpy as np
 import quantities
 
@@ -137,11 +135,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                     dict1.update({"neurite_Z_extent": neurite_Z_extent})
 
                     # Compute the neurite's bounding-box principal -largest, shortest- extents
-                    principal_extents = nm.morphmath.principal_direction_extent(neurite_cloud)
-
-                    principal_extents = sorted(map(abs, principal_extents))
-                    print key1, principal_extents, '\n\n'
-
+                    principal_extents = sorted(nm.morphmath.principal_direction_extent(neurite_cloud))
                     dict1.update({"neurite_shortest_extent": principal_extents[0]})
                     dict1.update({"neurite_largest_extent": principal_extents[-1]})
 
