@@ -144,8 +144,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                     point_dists = list()
                     for idx in range(len_points - 1):
                         for idx_next in range(idx + 1, len_points):
-                            point_dists.append(nm.morphmath.point_dist(
-                                neurite_points[idx], neurite_points[idx_next]))
+                            point_dists.append(nm.morphmath.point_dist(neurite_points[idx], neurite_points[idx_next]))
                     dict1.update({"neurite_field_diameter": max(point_dists)})
 
         dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
