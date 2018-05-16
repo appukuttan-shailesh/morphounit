@@ -106,15 +106,8 @@ class NeuroM_MorphStats_pop_Test(sciunit.Test):
         mapping = lambda section: section.points
         for key0, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs for each cell
 
-            # Deleting NeuroM's output about 'max_section_branch_order' for 'axons',
-            # as such experimental data is not provided
-            try:
-                del dict0["axon"]["max_section_branch_order"]
-            except KeyError:
-                pass
-
-            # Adding two more neurite features:
-            # neurite-field diameter and neurite's bounding-box -X,Y,Z- extents
+            # Adding more neurite's features:
+            # field diameter, bounding-box -X,Y,Z- extents and -largest,shortest- principal extents
             if os.path.isdir(self.morp_path):
                 neuron_path = os.path.join(self.morp_path, cell_ID+'.swc')
             else:
@@ -136,7 +129,7 @@ class NeuroM_MorphStats_pop_Test(sciunit.Test):
                     dict1.update({"neurite_Y_extent": neurite_Y_extent})
                     dict1.update({"neurite_Z_extent": neurite_Z_extent})
 
-                    # Compute the neurite's bounding-box principal -largest, shortest- extents
+                    # Compute the neurite's -largest, shortest- principal extents
                     principal_extents = sorted(nm.morphmath.principal_direction_extent(neurite_cloud))
                     dict1.update({"neurite_shortest_extent": principal_extents[0]})
                     dict1.update({"neurite_largest_extent": principal_extents[-1]})
