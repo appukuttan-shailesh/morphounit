@@ -137,7 +137,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                     dict1.update({"neurite_Z_extent": neurite_Z_extent})
 
                     # Compute the neurite's bounding-box principal -largest, shortest- extents
-                    principal_extents = nm.morphmath.principal_direction_extent(neurite_cloud)
+                    principal_extents = sorted(nm.morphmath.principal_direction_extent(neurite_cloud))
                     dict1.update({"neurite_shortest_extent": principal_extents[0]})
                     dict1.update({"neurite_largest_extent": principal_extents[-1]})
 
