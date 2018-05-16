@@ -6,8 +6,10 @@ import morphounit.plots as mph_plots
 
 import os
 import copy
+import json
 
 import neurom as nm
+
 import numpy as np
 import quantities
 
@@ -134,18 +136,14 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                     dict1.update({"neurite_Y_extent": neurite_Y_extent})
                     dict1.update({"neurite_Z_extent": neurite_Z_extent})
 
-                    # Compute the neurite's principal -largest, shortest- extents
-                    principal_extents = sorted(nm.morphmath.principal_direction_extent(neurite_cloud))
+                    # Compute the neurite's bounding-box principal -largest, shortest- extents
+                    principal_extents = nm.morphmath.principal_direction_extent(neurite_cloud)
                     dict1.update({"neurite_shortest_extent": principal_extents[0]})
                     dict1.update({"neurite_largest_extent": principal_extents[-1]})
 
                     # Compute the neurite-field diameter
-                    len_points = len(neurite_points)
-                    point_dists = list()
-                    for idx in range(len_points - 1):
-                        for idx_next in range(idx + 1, len_points):
-                            point_dists.append(nm.morphmath.point_dist(neurite_points[idx], neurite_points[idx_next]))
-                    dict1.update({"neurite_field_diameter": max(point_dists)})
+                    neurite_field_diameter = nm.morphmath.polygon_diameter(neurite_cloud)
+                    dict1.update({"neurite_field_diameter": neurite_field_diameter})
 
         dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
         for dict1 in mod_prediction.values():  # Set of cell's part-features dictionary pairs for each cell
