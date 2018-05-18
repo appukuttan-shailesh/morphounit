@@ -72,15 +72,17 @@ class NeuroM_MorphStats(sciunit.Model):
         # omitting enclosing directory's name  and file's extension
         with open(self.output_file, 'r') as fp:
             mod_prediction = json.load(fp)
-        for key0, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs for each cell
-            cell_ID = (key0.split("/")[-1]).split(".")[0]
-            del mod_prediction[key0]
-            mod_prediction.update({cell_ID: dict0})
+        os.remove(self.output_file)
         """
         # Saving NeuroM's morph_stats output in a formatted json-file
         with open(self.output_file, 'w') as fp:
             json.dump(mod_prediction, fp, sort_keys=True, indent=4)
         """
+        for key0, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs for each cell
+            cell_ID = (key0.split("/")[-1]).split(".")[0]
+            del mod_prediction[key0]
+            mod_prediction.update({cell_ID: dict0})
+
         return mod_prediction
 
     def get_morph_feature_info(self):
