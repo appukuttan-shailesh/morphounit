@@ -66,7 +66,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         for dict1 in data.values():  # Dict. with cell's part-features dictionary pairs for each cell
             for dict2 in dict1.values():    # Dict. with feature name-value pairs for each cell part: soma,
                                             # apical_dendrite, basal_dendrite or axon
-                for dict3 in dict2.values(): # Dict. with 'value', 'mean' and 'std' values
+                for dict3 in dict2.values():  # Dict. with 'value', 'mean' and 'std' values
                     for key, val in dict3.items():
                         quantity_parts = val.split()
                         number, units_str = float(quantity_parts[0]), " ".join(quantity_parts[1:])
@@ -114,7 +114,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                 neuron_path = self.morp_path
             neuron_model = nm.load_neuron(neuron_path)
             for key1, dict1 in dict0.items():  # Dict. with feature name-value pairs for each cell part:
-                                            # soma, apical_dendrite, basal_dendrite or axon
+                                                # soma, apical_dendrite, basal_dendrite or axon
                 if any(sub_str in key1 for sub_str in ['axon', 'dendrite']):
                     cell_part = key1
                     filter = lambda neurite: neurite.type == getattr(nm.NeuriteType, cell_part)
@@ -212,10 +212,9 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         # ---------------------- Saving relevant results ----------------------
         # create output directory
         # Currently done inside the model Class
-        """
         if not os.path.exists(self.path_test_output):
             os.makedirs(self.path_test_output)
-        """
+
         # Saving json file with model predictions
         json_pred_file = mph_plots.jsonFile_MorphStats(testObj=self, dictData=self.prediction_txt,
                                                        prefix_name="prediction_summary_")
