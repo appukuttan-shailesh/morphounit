@@ -103,76 +103,61 @@ class NeuroM_MorphStats_pop_Test(sciunit.Test):
         self.morp_path = model.morph_path
         mod_prediction = model.get_morph_feature_info()
 
-        print 'mod_prediction = \n', json.dumps(mod_prediction, sort_keys=True, indent=3)
-
-        # Computing average soma's diameter and following average neurite's (axon and basal dendrite) features:
-        # path-length, number of trunks, maximum branch order,
-        # field diameter, bounding-box -X,Y,Z- extents, -largest,shortest- principal extents
         mapping = lambda section: section.points
-        morph_paths = os.listdir(self.morp_path)
-        for morph_path in morph_paths:
-            neuron_path = os.path.join(self.morp_path, morph_path)
+        for cell_ID, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs for each cell
+
+            # Adding more neurite's features:
+            # field diameter, bounding-box -X,Y,Z- extents and -largest,shortest- principal extents
+            if os.path.isdir(self.morp_path):
+                neuron_path = os.path.join(self.morp_path, cell_ID+'.swc')
+            else:
+                neuron_path = self.morp_path
             neuron_model = nm.load_neuron(neuron_path)
-            for dict0 in mod_prediction.values():  # Set of cell's part-features dictionary pairs
-                for cell_part, dict1 in dict0.items():  # Dict. with feature name-value pairs for each cell part:
-                                                        # soma, apical_dendrite, basal_dendrite or axon
-                    for feature_name in dict1.keys():
-                        feature_value = nm.get(feature_name, neuron_model, neurite_type=getattr(nm, cell_part.upper()))
-                        dict1[feature_name].extend(feature_value)
-                        print morph_path, cell_part, feature_name, '\n'
+            for key1, dict1 in dict0.items():  # Dict. with feature name-value pairs for each cell part:
+                                                # soma, apical_dendrite, basal_dendrite or axon
+                if any(sub_str in key1 for sub_str in ['axon', 'dendrite']):
+                    cell_part = key1
+                    filter = lambda neurite: neurite.type == getattr(nm.NeuriteType, cell_part)
+                    neurite_points = [p for p in nm.iter_neurites(neuron_model, mapping, filter)]
+                    neurite_points = np.concatenate(neurite_points)
+                    neurite_cloud = neurite_points[:, 0:3]
 
-        # Adding more neurite's features:
-        # field diameter, bounding-box -X,Y,Z- extents and -largest,shortest- principal extents
-        neurite_features_add = ['neurite_X_extent', 'neurite_Y_extent', 'neurite_Z_extent', 'neurite_shortest_extent',
-                                'neurite_largest_extent', 'neurite_field_diameter']
+                    # Compute the neurite's bounding-box -X,Y,Z- extents
+                    neurite_X_extent, neurite_Y_extent, neurite_Z_extent = \
+                        np.max(neurite_cloud, axis=0) - np.min(neurite_cloud, axis=0)
+                    dict1.update({"neurite_X_extent": neurite_X_extent})
+                    dict1.update({"neurite_Y_extent": neurite_Y_extent})
+                    dict1.update({"neurite_Z_extent": neurite_Z_extent})
 
-        for dict0 in mod_prediction.values():  # Set of cell's part-features dictionary pairs
-            for cell_part, dict1 in dict0.values():
-                    if any(sub_str in cell_part for sub_str in ['axon', 'dendrite']):
-                        dict_features.update({key: {morph_feature: list() for morph_feature in soma_features}})
-                    else:
-                        dict_features.update({key: {morph_feature: list() for morph_feature in neurite_features}})
+                    # Compute the neurite's -largest, shortest- principal extents
+                    principal_extents = sorted(nm.morphmath.principal_direction_extent(neurite_cloud))
+                    dict1.update({"neurite_shortest_extent": principal_extents[0]})
+                    dict1.update({"neurite_largest_extent": principal_extents[-1]})
 
-        for morph_path in morph_paths:
-            neuron_path = os.path.join(self.morp_path, morph_path)
-            neuron_model = nm.load_neuron(neuron_path)
-            for dict0 in mod_prediction.values():  # Set of cell's part-features dictionary pairs
-                for cell_part, dict1 in dict0.items():  # Dict. with feature name-value pairs for each cell part:
-                                                        # soma, apical_dendrite, basal_dendrite or axon
+                    # Compute the neurite-field diameter
+                    neurite_field_diameter = nm.morphmath.polygon_diameter(neurite_cloud)
+                    dict1.update({"neurite_field_diameter": neurite_field_diameter})
 
-                    if any(sub_str in cell_part for sub_str in ['axon', 'dendrite']):
-                        filter = lambda neurite: neurite.type == getattr(nm.NeuriteType, cell_part)
-                        neurite_points = [p for p in nm.iter_neurites(neuron_model, mapping, filter)]
-                        neurite_points = np.concatenate(neurite_points)
-                        neurite_cloud = neurite_points[:, 0:3]
+        # Collecting raw data from all cells and computing the corresponding average
+        population_features = copy.deepcopy(mod_prediction.values())[0]
+        for cell_part, feature_dict in population_features.items():
+            feat_dict_raw = {feat_name+'_raw': [cell_dict[cell_part][feat_name]
+                                                for cell_dict in mod_prediction.values()]
+                             for feat_name in feature_dict.keys()}
+            feature_dict.update({feat_name: np.mean(feat_dict_raw[feat_name+'_raw'])
+                                 for feat_name in feature_dict.keys()})
+            feature_dict.update(feat_dict_raw)
 
-                        # Compute the neurite's bounding-box -X,Y,Z- extents
-                        neurite_X_extent, neurite_Y_extent, neurite_Z_extent = \
-                            np.max(neurite_cloud, axis=0) - np.min(neurite_cloud, axis=0)
-                        dict1["neurite_X_extent"].append(neurite_X_extent)
-                        dict1["neurite_Y_extent"].append(neurite_Y_extent)
-                        dict1["neurite_Z_extent"].append(neurite_Z_extent)
-
-                        # Compute the neurite's -largest, shortest- principal extents
-                        principal_extents = sorted(nm.morphmath.principal_direction_extent(neurite_cloud))
-                        dict1["neurite_shortest_extent"].append(principal_extents[0])
-                        dict1["neurite_largest_extent"].append(principal_extents[-1])
-
-                        # Compute the neurite-field diameter
-                        neurite_field_diameter = nm.morphmath.polygon_diameter(neurite_cloud)
-                        dict1["neurite_field_diameter"].append(neurite_field_diameter)
-
+        pop_prediction = dict(FSI_pop=population_features)
         """
-        total_neurite_length
-        total_number_of_neurite
-        max_section_branch_order
+        with open(model.output_file, 'w') as fp:
+            print json.dump(mod_prediction, fp, sort_keys=True, indent=3)
+        print json.dumps(pop_prediction, sort_keys=True, indent=3)
         """
-
-        print 'mod_prediction = \n', json.dumps(mod_prediction, sort_keys=True, indent=3)
 
         # Adding the right units and converting feature values to strings
         dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
-        for dict1 in mod_prediction.values():  # Set of cell's part-features dictionary pairs for each cell
+        for dict1 in pop_prediction.values():  # Set of cell's part-features dictionary pairs for each cell
             for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part:
                                             # soma, apical_dendrite, basal_dendrite or axon
                 for key, val in dict2.items():
@@ -186,9 +171,12 @@ class NeuroM_MorphStats_pop_Test(sciunit.Test):
                     else:
                         dict2[key] = dict(value=str(val))
 
-        self.prediction_txt = copy.deepcopy(mod_prediction)
+        self.prediction_txt = copy.deepcopy(pop_prediction)
+        print 'prediction_txt = \n', json.dumps(self.prediction_txt, sort_keys=True, indent=3), '\n\n'
 
-        # prediction = self.format_data(mod_prediction)
+        prediction = self.format_data(pop_prediction)
+        print 'prediction = \n', prediction, '\n\n'
+
         # return prediction
 
     # ----------------------------------------------------------------------

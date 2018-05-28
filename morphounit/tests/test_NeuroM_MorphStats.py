@@ -104,7 +104,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         mod_prediction = model.get_morph_feature_info()
 
         mapping = lambda section: section.points
-        for key0, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs for each cell
+        for cell_ID, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs for each cell
 
             # Adding more neurite's features:
             # field diameter, bounding-box -X,Y,Z- extents and -largest,shortest- principal extents
@@ -140,15 +140,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
         dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
         for dict1 in mod_prediction.values():  # Set of cell's part-features dictionary pairs for each cell
-
-            # Regrouping all soma's features-values pairs into a unique 'soma' key inside mod_prediction
-            soma_features = dict()
-            for key, val in dict1.items():
-                if key.find('soma') == -1:
-                    continue
-                soma_features.update({key: val})
-                del dict1[key]
-                dict1.update({"soma": soma_features})
 
             # Adding the right units and converting feature values to strings
             for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part:
