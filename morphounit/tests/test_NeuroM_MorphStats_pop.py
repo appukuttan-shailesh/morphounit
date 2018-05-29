@@ -106,6 +106,7 @@ class NeuroM_MorphStats_pop_Test(sciunit.Test):
         mapping = lambda section: section.points
         for cell_ID, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs for each cell
 
+            print 'Analysing cell ---> ', cell_ID+'.swc', '\n'
             # Adding more neurite's features:
             # field diameter, bounding-box -X,Y,Z- extents and -largest,shortest- principal extents
             if os.path.isdir(self.morp_path):
@@ -140,20 +141,24 @@ class NeuroM_MorphStats_pop_Test(sciunit.Test):
 
         # Collecting raw data from all cells and computing the corresponding average
         population_features = copy.deepcopy(mod_prediction.values())[0]
+        population_features_raw = dict.fromkeys(population_features, {})
         for cell_part, feature_dict in population_features.items():
-            feat_dict_raw = {feat_name+'_raw': [cell_dict[cell_part][feat_name]
-                                                for cell_dict in mod_prediction.values()]
+            feat_dict_raw = {feat_name: [cell_dict[cell_part][feat_name] for cell_dict in mod_prediction.values()]
                              for feat_name in feature_dict.keys()}
-            feature_dict.update({feat_name: np.mean(feat_dict_raw[feat_name+'_raw'])
+            population_features_raw.update({cell_part: feat_dict_raw})
+            feature_dict.update({feat_name: np.mean(feat_dict_raw[feat_name])
                                  for feat_name in feature_dict.keys()})
-            feature_dict.update(feat_dict_raw)
 
-        pop_prediction = dict(FSI_pop=population_features)
         """
         with open(model.output_file, 'w') as fp:
             print json.dump(mod_prediction, fp, sort_keys=True, indent=3)
         print json.dumps(pop_prediction, sort_keys=True, indent=3)
         """
+        pop_prediction = dict(FSI_mean=population_features)
+        pop_prediction_raw = dict(FSI_pop=population_features_raw)
+
+        # print 'pop_prediction = ', json.dumps(pop_prediction, sort_keys=True, indent=3), '\n\n'
+        # print 'pop_prediction_raw = ', json.dumps(pop_prediction_raw, sort_keys=True, indent=3), '\n'
 
         # Adding the right units and converting feature values to strings
         dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
@@ -172,12 +177,10 @@ class NeuroM_MorphStats_pop_Test(sciunit.Test):
                         dict2[key] = dict(value=str(val))
 
         self.prediction_txt = copy.deepcopy(pop_prediction)
-        print 'prediction_txt = \n', json.dumps(self.prediction_txt, sort_keys=True, indent=3), '\n\n'
+        self.prediction_raw_txt = copy.deepcopy(pop_prediction_raw)
 
         prediction = self.format_data(pop_prediction)
-        print 'prediction = \n', prediction, '\n\n'
-
-        # return prediction
+        return prediction
 
     # ----------------------------------------------------------------------
 
@@ -231,16 +234,21 @@ class NeuroM_MorphStats_pop_Test(sciunit.Test):
         json_pred_files = json_pred_file.create()
         self.figures.extend(json_pred_files)
 
-        # Saving json file with scores
-        json_scores_file = mph_plots.jsonFile_MorphStats(testObj=self, dictData=self.score_feat_dict,
-                                                         prefix_name="scores_summary_")
-        json_scores_files = json_scores_file.create()
-        self.figures.extend(json_scores_files)
+        json_pred_file = mph_plots.jsonFile_MorphStats(testObj=self, dictData=self.prediction_raw_txt,
+                                                       prefix_name="prediction_summary_")
+        json_pred_files = json_pred_file.create()
+        self.figures.extend(json_pred_files)
 
         # Saving table with results
         txt_table = mph_plots.TxtTable_MorphStats(self)
         table_files = txt_table.create()
         self.figures.extend(table_files)
+
+        # Saving json file with scores
+        json_scores_file = mph_plots.jsonFile_MorphStats(testObj=self, dictData=self.score_feat_dict,
+                                                         prefix_name="scores_summary_")
+        json_scores_files = json_scores_file.create()
+        self.figures.extend(json_scores_files)
 
         # Saving figure with scores bar-plot
         barplot_figure = mph_plots.ScoresBars_MorphStats(self)
