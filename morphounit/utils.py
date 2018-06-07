@@ -85,11 +85,11 @@ class NeuroM_MorphStats(sciunit.Model):
                     dict0.update({"soma": soma_features})
 
         # Saving NeuroM's morph_stats output in a formatted json-file
-        """
+        
         with open(self.output_file, 'w') as fp:
             json.dump(mod_prediction, fp, sort_keys=True, indent=3)
-        """
-        os.remove(self.output_file)
+        
+        # os.remove(self.output_file)
 
         return mod_prediction
 
