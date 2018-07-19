@@ -109,7 +109,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
             # Adding more neurite's features:
             # field diameter, bounding-box -X,Y,Z- extents and -largest,shortest- principal extents
             if os.path.isdir(self.morp_path):
-                neuron_path = os.path.join(self.morp_path, cell_ID+'.swc')
+                neuron_path = os.path.join(self.morp_path, cell_ID)
             else:
                 neuron_path = self.morp_path
             neuron_model = nm.load_neuron(neuron_path)
@@ -135,8 +135,13 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                     dict1.update({"neurite_largest_extent": principal_extents[-1]})
 
                     # Compute the neurite-field diameter
-                    neurite_field_diameter = nm.morphmath.polygon_diameter(neurite_cloud)
-                    dict1.update({"neurite_field_diameter": neurite_field_diameter})
+                    # neurite_field_diameter = nm.morphmath.polygon_diameter(neurite_cloud)
+                    # dict1.update({"neurite_field_diameter": neurite_field_diameter})
+
+        """
+        with open(model.output_file, 'w') as fp:
+            print json.dump(mod_prediction, fp, sort_keys=True, indent=3)
+        """
 
         dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
         for dict1 in mod_prediction.values():  # Set of cell's part-features dictionary pairs for each cell

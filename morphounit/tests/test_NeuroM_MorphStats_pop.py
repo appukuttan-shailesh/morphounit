@@ -110,7 +110,7 @@ class NeuroM_MorphStats_pop_Test(sciunit.Test):
             # Adding more neurite's features:
             # field diameter, bounding-box -X,Y,Z- extents and -largest,shortest- principal extents
             if os.path.isdir(self.morp_path):
-                neuron_path = os.path.join(self.morp_path, cell_ID+'.swc')
+                neuron_path = os.path.join(self.morp_path, cell_ID)
             else:
                 neuron_path = self.morp_path
             neuron_model = nm.load_neuron(neuron_path)

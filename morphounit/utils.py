@@ -1,6 +1,7 @@
 import sciunit
 import os
 import json
+import copy
 import neurom as nm
 import numpy as np
 
@@ -72,10 +73,10 @@ class NeuroM_MorphStats(sciunit.Model):
         with open(self.output_file, 'r') as fp:
             mod_prediction = json.load(fp)
         for key0, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs for each cell
-            # Correcting cell's ID, given by some neuroM versions:
+            # Correcting cell's ID, given by some NeuroM versions:
             # omitting enclosing directory's name and file's extension
-            # cell_ID = (key0.split("/")[-1]).split(".")[0]
-            cell_ID = os.path.splitext(key0)[0]
+            cell_ID = (key0.split("/")[-1])
+            # cell_ID = os.path.splitext(cell_ID)[0]
             del mod_prediction[key0]
             mod_prediction.update({cell_ID: dict0})
 
@@ -90,8 +91,8 @@ class NeuroM_MorphStats(sciunit.Model):
         # Saving NeuroM's morph_stats output in a formatted json-file
         with open(self.output_file, 'w') as fp:
             json.dump(mod_prediction, fp, sort_keys=True, indent=3)
+        os.remove(self.output_file)
 
-        # os.remove(self.output_file)
 
         return mod_prediction
 
@@ -101,7 +102,8 @@ class NeuroM_MorphStats(sciunit.Model):
 
 class NeuroM_MorphStats_AddFeatures(NeuroM_MorphStats):
     """A class to interact with morphology files via the morphometrics-NeuroM's API (morph_stats).
-    It is used to add more features to the generated prediction from the parent class"""
+    It is used to add more features to the generated prediction from the parent class
+    Averages and std are computed in case more than a morphology file is processed"""
 
     def __init__(self, model_name='NeuroM_MorphStats', morph_path=None,
                  config_path=None, morph_stats_file=None, base_directory='.'):
@@ -109,8 +111,11 @@ class NeuroM_MorphStats_AddFeatures(NeuroM_MorphStats):
         super(NeuroM_MorphStats_AddFeatures, self).__init__(model_name=model_name, morph_path=morph_path,
                                                             config_path=config_path, morph_stats_file=morph_stats_file,
                                                             base_directory=base_directory)
-
         self.morph_feature_info = self.complete_prediction()
+        self.morph_feature_info = self.avg_prediction()
+        self.morph_feature_info = self.pre_formatting()
+
+    # ----------------------------------------------------------------------
 
     def complete_prediction(self):
         """Adding more features by means of other NeuroM's functionalities
@@ -124,7 +129,7 @@ class NeuroM_MorphStats_AddFeatures(NeuroM_MorphStats):
             # Adding more neurite's features:
             # field diameter, bounding-box -X,Y,Z- extents and -largest,shortest- principal extents
             if os.path.isdir(self.morph_path):
-                neuron_path = os.path.join(self.morph_path, cell_ID + '.swc')
+                neuron_path = os.path.join(self.morph_path, cell_ID)
             else:
                 neuron_path = self.morph_path
             neuron_model = nm.load_neuron(neuron_path)
@@ -153,25 +158,57 @@ class NeuroM_MorphStats_AddFeatures(NeuroM_MorphStats):
                     # neurite_field_diameter = nm.morphmath.polygon_diameter(neurite_cloud)
                     # dict1.update({"neurite_field_diameter": neurite_field_diameter})
 
+        return mod_prediction
+
+    # ----------------------------------------------------------------------
+
+    def avg_prediction(self):
+        """ Collecting raw data from all cells and computing the corresponding average"""
+
+        mod_prediction = self.morph_feature_info
+
+        population_features = copy.deepcopy(mod_prediction.values())[0]
+        for cell_part, feature_dict in population_features.items():
+            feat_dict_raw = {feat_name: [cell_dict[cell_part][feat_name] for cell_dict in mod_prediction.values()]
+                             for feat_name in feature_dict.keys()}
+            feature_dict.update({feat_name: [np.mean(feat_dict_raw[feat_name]), np.std(feat_dict_raw[feat_name])]
+                                 for feat_name in feature_dict.keys()})
+
+        pop_prediction = dict(pop_mean=population_features)
+
+        return pop_prediction
+
+    # ----------------------------------------------------------------------
+
+    def pre_formatting(self):
+        """Formatting the prediction by adding units and additional labels, e.g. 'mean', 'value', etc"""
+
+        mod_prediction = self.morph_feature_info
+
         dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
         for dict1 in mod_prediction.values():  # Set of cell's part-features dictionary pairs for each cell
 
             # Adding the right units and converting feature values to strings
             for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part:
-                # soma, apical_dendrite, basal_dendrite or axon
+                                            # soma, apical_dendrite, basal_dendrite or axon
                 for key, val in dict2.items():
                     if any(sub_str in key for sub_str in ['radius', 'radii']):
                         del dict2[key]
-                        val *= 2
+                        val[0] *= 2
                         key = key.replace("radius", "diameter")
                         key = key.replace("radii", "diameter")
-                    if any(sub_str in key for sub_str in dim_um):
-                        dict2[key] = dict(value=str(val) + ' um')
-                    else:
-                        dict2[key] = dict(value=str(val))
 
+                    if val[1] == 0:  # val[1] is the std, and a zero value is unrealistic
+                        val[1] = 1.0  # To avoid division-by-zero error when computing scores
+                    if any(sub_str in key for sub_str in dim_um):
+                        dict2[key] = dict(mean=str(val[0]) + ' um', std=str(val[1]) + ' um')
+                    else:
+                        dict2[key] = dict(mean=str(val[0]), std=str(val[1]))
+
+        """
         # Saving NeuroM's morph_stats output in a formatted json-file
         with open(self.output_file, 'w') as fp:
             json.dump(mod_prediction, fp, sort_keys=True, indent=3)
+        """
 
         return mod_prediction
