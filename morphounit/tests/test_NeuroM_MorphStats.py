@@ -27,6 +27,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         observation = self.format_data(observation)
         sciunit.Test.__init__(self, observation, name)
 
+
     # ----------------------------------------------------------------------
 
     def format_data(self, data):

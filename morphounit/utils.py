@@ -29,14 +29,14 @@ class NeuroM_MorphStats(sciunit.Model):
         sciunit.Model.__init__(self, name=model_name)
         self.description = "A class to interact with morphology files " \
                            "via the morphometrics-NeuroM's API (morph_stats)"
-        self.version = model_name
+        self.model_version = model_name
 
         self.morph_path = morph_path
         self.config_path = config_path
 
         # Defining output directory
         self.morph_stats_output = os.path.join(base_directory, 'validation_results', 'neuroM_morph_softChecks',
-                                               self.version, datetime.now().strftime("%Y%m%d-%H%M%S"))
+                                               self.model_version, datetime.now().strftime("%Y%m%d-%H%M%S"))
 
         self.output_file = os.path.join(self.morph_stats_output, morph_stats_file)
 
