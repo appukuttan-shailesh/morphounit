@@ -163,7 +163,8 @@ class NeuroM_MorphStats_AddFeatures(NeuroM_MorphStats):
     # ----------------------------------------------------------------------
 
     def pre_formatting(self):
-        """Formatting the prediction by adding units"""
+        """Formatting the prediction by adding (non-functional) units (as strings).
+        Python package 'quantities' is not used yet, this is implemented in the Test class"""
 
         mod_prediction = self.morph_feature_info
 
