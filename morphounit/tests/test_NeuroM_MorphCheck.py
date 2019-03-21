@@ -40,7 +40,7 @@ class NeuroM_MorphoCheck(sciunit.Test):
 
     def generate_prediction(self, model, verbose=False):
         """Implementation of sciunit.Test.generate_prediction."""
-        self.model_version = model.version
+        self.model_version = model.model_version
         self.path_test_output = os.path.join(self.base_directory, 'validation_results', 'neuroM_morph_hardChecks', self.model_version, datetime.now().strftime("%Y%m%d-%H%M%S"))
         if not os.path.exists(self.path_test_output):
             os.makedirs(self.path_test_output)

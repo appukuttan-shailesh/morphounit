@@ -214,7 +214,8 @@ class NeuroM_MorphStats_AddFeatures(NeuroM_MorphStats):
     # ----------------------------------------------------------------------
 
     def pre_formatting_pop(self):
-        """Formatting the prediction by adding units and additional labels, e.g. 'mean', 'value', etc"""
+        """Formatting the prediction by adding units and additional labels, e.g. 'mean', 'value', etc
+        Python package 'quantities' is not used yet, this is implemented in the Test class"""
 
         mod_prediction = self.morph_feature_info
 

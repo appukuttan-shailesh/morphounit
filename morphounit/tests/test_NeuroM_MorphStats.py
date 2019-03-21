@@ -127,6 +127,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
         score_cell_dict = dict.fromkeys([key0 for key0 in prediction.keys()], [])
         obs_features = copy.deepcopy(observation.values())[0]  # only features registered in observation data are tested
+
         score_feat_dict = dict()
         for key0 in prediction:  # cell_ID keys
 
