@@ -98,6 +98,19 @@ class NeuroM_MorphStats(sciunit.Model):
     def get_morph_feature_info(self):
         return self.morph_feature_info
 
+    def neuroM_morph_stats_doc():
+        """Prints morph_stats's nomenclature constraints to be followed by the
+        user when specificying observation and configuration files"""
+
+        import neurom as nm
+        print 'Neurite types available:\n', [neurite_type.name for neurite_type in nm.NEURITE_TYPES[1:]]
+        print 'Neurite features available:\n', sorted(nm.fst.NEURITEFEATURES.keys())
+        print 'Neuron features available:\n', sorted(nm.fst.NEURONFEATURES.keys())
+
+        print "A summary statistic for each feature can be specified. Modes available:\n"
+        print "'min', 'max', 'median', 'mean', 'std'\n"
+        print "A prefix with the stat. mode intended, followed by a '_', should \
+        be added to the feature name ; e.g., 'total_number_of_neurites'\n"
 
 class NeuroM_MorphStats_AddFeatures(NeuroM_MorphStats):
     """A class to interact with morphology files via the morphometrics-NeuroM's API (morph_stats).

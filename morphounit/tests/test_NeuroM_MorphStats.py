@@ -86,14 +86,71 @@ class NeuroM_MorphStats_Test(sciunit.Test):
     # ----------------------------------------------------------------------
 
     def validate_observation(self, observation):
+
+        """Checks observation file compliance with NeuroM-morph_stats nomenclature"""
+        # Cell parts available
+        neuron_parts_avail = [neurite_type.name for neurite_type in nm.NEURITE_TYPES[1:]]
+        neuron_parts_avail.append('neuron')
+        print 'Cell parts available:\n', neuron_parts_avail, '\n'
+
+        # Cell features available
+        print 'Cell features available:\n', sorted(nm.fst.NEURONFEATURES.keys()), '\n'
+
+        # Neurite features available
+        neurite_feats_avail = nm.fst.NEURITEFEATURES.keys()
+        neurite_feats_extra = ['neurite_field_diameter', \
+        'neurite_largest_extent', 'neurite_shortest_extent',
+        'neurite_X_extent', 'neurite_Y_extent', 'neurite_Z_extent']
+        neurite_feats_avail.extend(neurite_feats_extra)
+        print 'Neurite features available:\n', sorted(neurite_feats_avail), '\n'
+
+        # Statistical modes available
+        stat_modes = ['min', 'max', 'median', 'mean', 'total', 'std']
+        print "A summary statistics for each feature can be indicated. Modes available: ", stat_modes
+        # How to specify feature + mode
+        print ". To that end a prefix formed with the stat. mode intended, followed by a '_', \
+        should be added to the feature name, with the exception of those contained in the set:\n"
+        print neurite_feats_extra, '\n'
+        print "For instance: 'total_number_of_neurites'\n"
+        print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+        print "Checking observation file compliance with NeuroM-morph_stats nomenclature..."
+        for dict1 in observation.values():  # Dict. with cell's part-features dictionary pairs for each cell
+            for key2, dict2 in dict1.items(): # Dict. with feature name-value pairs for each cell part:
+                                                # neuron, apical_dendrite, basal_dendrite or axon
+                assert (key2 in neuron_parts_avail), \
+                "{} is not permitted. Please, use one in the following list:\n {}".format(key2, neuron_parts_avail)
+
+                for key3 in dict2.keys():  # Dict. with 'value' or 'mean' and 'std' values for each feature
+                    stat_mode, feat_name = key3.split('_',1)[0], key3.split('_',1)[1]
+                    print key3, '-->', stat_mode, feat_name, '\n'
+
+                    if (key2 == 'neuron'):
+                        assert(stat_mode in stat_modes), \
+                        "{} is not permitted. Please, use one in the following list:\n {}". \
+                        format(stat_mode, stat_modes)
+
+                        assert(feat_name in nm.fst.NEURONFEATURES.keys()), \
+                        "{} is not permitted. Please, use one in the following list:\n {}". \
+                        format(key3, sorted(nm.fst.NEURONFEATURES.keys()))
+                    elif (feat_name in nm.fst.NEURITEFEATURES.keys()):
+                        assert(stat_mode in stat_modes), \
+                        "{} is not permitted. Please, use one in the following list:\n {}". \
+                        format(stat_mode, stat_modes)
+                    else:
+                        assert(key3 in neurite_feats_extra), \
+                        "{} is not permitted. Please, use one in the following list:\n {}". \
+                        format(key3, neurite_feats_avail)
+
+        print 'OK\n'
+
         for dict1 in observation.values():  # Dict. with cell's part-features dictionary pairs for each cell
             for dict2 in dict1.values():    # Dict. with feature name-value pairs for each cell part: soma,
                                             # apical_dendrite, basal_dendrite or axon
                 for dict3 in dict2.values():  # Dict. with 'value' or 'mean' and 'std' values
                     for val in dict3.values():
                         assert type(val) is quantities.Quantity, \
-                                sciunit.ObservationError(("Observation must be of the form "
-                                                          "{'mean': 'XX units_str','std': 'YY units_str'}"))
+                                sciunit.Error(("Observation must be of the form "
+                                "{'mean': 'XX units_str','std': 'YY units_str'}"))
 
     # ----------------------------------------------------------------------
 
@@ -145,7 +202,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
             Mean_Zscore_dict = {"A mean |Z-score|": mph_scores.CombineZScores.compute(scores_cell_list).score}
             score_feat_dict[key0].update(Mean_Zscore_dict)
             score_cell_dict[key0] = Mean_Zscore_dict
-
 
         self.score_cell_dict = score_cell_dict
         self.score_feat_dict = score_feat_dict
