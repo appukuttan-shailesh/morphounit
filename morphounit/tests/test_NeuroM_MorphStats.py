@@ -91,57 +91,60 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         # Cell parts available
         neuron_parts_avail = [neurite_type.name for neurite_type in nm.NEURITE_TYPES[1:]]
         neuron_parts_avail.append('neuron')
-        print 'Cell parts available:\n', neuron_parts_avail, '\n'
+        print 'Cell parts available:\n', sorted(neuron_parts_avail), '\n'
 
         # Cell features available
-        print 'Cell features available:\n', sorted(nm.fst.NEURONFEATURES.keys()), '\n'
+        cell_feats_avail = nm.fst.NEURONFEATURES.keys()
+        cell_feats_extra = ['soma_diameter']
+        cell_feats_avail.extend(cell_feats_extra)
+        print 'Cell features available:\n', sorted(cell_feats_avail), '\n'
 
         # Neurite features available
         neurite_feats_avail = nm.fst.NEURITEFEATURES.keys()
-        neurite_feats_extra = ['neurite_field_diameter', \
-        'neurite_largest_extent', 'neurite_shortest_extent',
-        'neurite_X_extent', 'neurite_Y_extent', 'neurite_Z_extent']
+        neurite_feats_extra = ['neurite_field_diameter', 'neurite_largest_extent', 'neurite_shortest_extent',
+                               'neurite_X_extent', 'neurite_Y_extent', 'neurite_Z_extent']
         neurite_feats_avail.extend(neurite_feats_extra)
         print 'Neurite features available:\n', sorted(neurite_feats_avail), '\n'
 
         # Statistical modes available
         stat_modes = ['min', 'max', 'median', 'mean', 'total', 'std']
-        print "A summary statistics for each feature can be indicated. Modes available: ", stat_modes
-        # How to specify feature + mode
-        print ". To that end a prefix formed with the stat. mode intended, followed by a '_', \
-        should be added to the feature name, with the exception of those contained in the set:\n"
-        print neurite_feats_extra, '\n'
-        print "For instance: 'total_number_of_neurites'\n"
-        print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+        print 'A summary statistics must be indicated for each feature, with the ' \
+              'exception of those contained in the set ', neurite_feats_extra, \
+            '. Statistics modes available: ', stat_modes, '\n'
+        # How to specify feature_name = mode + feature
+        print "To that end, a prefix formed with the stats. mode intended, followed by '_', " \
+              "should be added to the feature name. For instance: 'total_number_of_neurites' \n"
+        print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n\n"
+
         print "Checking observation file compliance with NeuroM-morph_stats nomenclature..."
         for dict1 in observation.values():  # Dict. with cell's part-features dictionary pairs for each cell
-            for key2, dict2 in dict1.items(): # Dict. with feature name-value pairs for each cell part:
-                                                # neuron, apical_dendrite, basal_dendrite or axon
+            for key2, dict2 in dict1.items():  # Dict. with feature name-value pairs for each cell part:
+                                                #  neuron, apical_dendrite, basal_dendrite or axon
                 assert (key2 in neuron_parts_avail), \
-                "{} is not permitted. Please, use one in the following list:\n {}".format(key2, neuron_parts_avail)
+                    "{} is not permitted for neuron parts. Please, use one in the following " \
+                    "list:\n {}".format(key2, neuron_parts_avail)
 
-                for key3 in dict2.keys():  # Dict. with 'value' or 'mean' and 'std' values for each feature
-                    stat_mode, feat_name = key3.split('_',1)[0], key3.split('_',1)[1]
-                    print key3, '-->', stat_mode, feat_name, '\n'
-
-                    if (key2 == 'neuron'):
-                        assert(stat_mode in stat_modes), \
-                        "{} is not permitted. Please, use one in the following list:\n {}". \
-                        format(stat_mode, stat_modes)
-
-                        assert(feat_name in nm.fst.NEURONFEATURES.keys()), \
-                        "{} is not permitted. Please, use one in the following list:\n {}". \
-                        format(key3, sorted(nm.fst.NEURONFEATURES.keys()))
-                    elif (feat_name in nm.fst.NEURITEFEATURES.keys()):
-                        assert(stat_mode in stat_modes), \
-                        "{} is not permitted. Please, use one in the following list:\n {}". \
-                        format(stat_mode, stat_modes)
+                for key3 in dict2.keys():
+                    feat_name, stat_mode = key3.split('_', 1)[1], key3.split('_', 1)[0]
+                    if key2 == 'neuron':
+                        # Checking the NeuroM features for the cell
+                        assert(feat_name in cell_feats_avail), \
+                            "{} is not permitted for cells. Please, use one in the following list:\n {}" \
+                            .format(feat_name, sorted(cell_feats_avail))
+                        # Checking the statistical mode for the cell features
+                        assert (stat_mode in stat_modes), \
+                            "{} is not permitted for statistical modes. Please, use one in the following list:\n {}" \
+                            .format(stat_mode, stat_modes)
+                    elif feat_name in nm.fst.NEURITEFEATURES.keys():
+                        assert (stat_mode in stat_modes), \
+                            "{} is not permitted for statistical modes. Please, use one in the following list:\n {}" \
+                            .format(stat_mode, stat_modes)
                     else:
+                        # Checking the extra-NeuroM features for Neurites, if any
                         assert(key3 in neurite_feats_extra), \
-                        "{} is not permitted. Please, use one in the following list:\n {}". \
-                        format(key3, neurite_feats_avail)
-
-        print 'OK\n'
+                            "{} is not permitted for neurites. Please, use one in the following list:\n {}" \
+                            .format(key3, sorted(neurite_feats_avail))
+        print 'OK \n'
 
         for dict1 in observation.values():  # Dict. with cell's part-features dictionary pairs for each cell
             for dict2 in dict1.values():    # Dict. with feature name-value pairs for each cell part: soma,

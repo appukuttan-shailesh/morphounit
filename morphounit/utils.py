@@ -109,8 +109,7 @@ class NeuroM_MorphStats(sciunit.Model):
 
         print "A summary statistic for each feature can be specified. Modes available:\n"
         print "'min', 'max', 'median', 'mean', 'std'\n"
-        print "A prefix with the stat. mode intended, followed by a '_', should \
-        be added to the feature name ; e.g., 'total_number_of_neurites'\n"
+
 
 class NeuroM_MorphStats_AddFeatures(NeuroM_MorphStats):
     """A class to interact with morphology files via the morphometrics-NeuroM's API (morph_stats).
