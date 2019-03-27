@@ -91,30 +91,27 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         # Cell parts available
         neuron_parts_avail = [neurite_type.name for neurite_type in nm.NEURITE_TYPES[1:]]
         neuron_parts_avail.append('neuron')
-        print 'Cell parts available:\n', sorted(neuron_parts_avail), '\n'
 
         # Cell features available
         cell_feats_avail = nm.fst.NEURONFEATURES.keys()
         cell_feats_extra = ['soma_diameter']
         cell_feats_avail.extend(cell_feats_extra)
-        print 'Cell features available:\n', sorted(cell_feats_avail), '\n'
 
         # Neurite features available
         neurite_feats_avail = nm.fst.NEURITEFEATURES.keys()
         neurite_feats_extra = ['neurite_field_diameter', 'neurite_largest_extent', 'neurite_shortest_extent',
                                'neurite_X_extent', 'neurite_Y_extent', 'neurite_Z_extent']
         neurite_feats_avail.extend(neurite_feats_extra)
-        print 'Neurite features available:\n', sorted(neurite_feats_avail), '\n'
 
         # Statistical modes available
         stat_modes = ['min', 'max', 'median', 'mean', 'total', 'std']
-        print 'A summary statistics must be indicated for each feature, with the ' \
-              'exception of those contained in the set ', neurite_feats_extra, \
-            '. Statistics modes available: ', stat_modes, '\n'
-        # How to specify feature_name = mode + feature
-        print "To that end, a prefix formed with the stats. mode intended, followed by '_', " \
-              "should be added to the feature name. For instance: 'total_number_of_neurites' \n"
-        print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n\n"
+
+        # morph_stats's nomenclature constraints to specify observation files
+        """
+        self.neuroM_morph_stats_doc(neuron_parts_avail,
+                                    cell_feats_avail, neurite_feats_avail, neurite_feats_extra,
+                                    stat_modes)
+        """
 
         print "Checking observation file compliance with NeuroM-morph_stats nomenclature..."
         for dict1 in observation.values():  # Dict. with cell's part-features dictionary pairs for each cell
@@ -146,6 +143,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                             .format(key3, sorted(neurite_feats_avail))
         print 'OK \n'
 
+        # Checking format of the observation data
         for dict1 in observation.values():  # Dict. with cell's part-features dictionary pairs for each cell
             for dict2 in dict1.values():    # Dict. with feature name-value pairs for each cell part: soma,
                                             # apical_dendrite, basal_dendrite or axon
@@ -154,6 +152,22 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                         assert type(val) is quantities.Quantity, \
                                 sciunit.Error(("Observation must be of the form "
                                 "{'mean': 'XX units_str','std': 'YY units_str'}"))
+
+    # ----------------------------------------------------------------------
+
+    def neuroM_morph_stats_doc(self, neuron_parts_avail, cell_feats_avail,
+                               neurite_feats_avail, neurite_feats_extra, stat_modes):
+        """Prints morph_stats's nomenclature constraints to be followed by the user when specifying observation files"""
+        print 'Cell parts available:\n', sorted(neuron_parts_avail), '\n'
+        print 'Cell features available:\n', sorted(cell_feats_avail), '\n'
+        print 'Neurite features available:\n', sorted(neurite_feats_avail), '\n'
+        print 'A summary statistics must be indicated for each feature, with the ' \
+              'exception of those contained in the set ', neurite_feats_extra, \
+            '. Statistics modes available: ', stat_modes, '\n'
+        # How to specify feature_name = mode + feature
+        print "To that end, a prefix formed with the stats. mode intended, followed by '_', " \
+              "should be added to the feature name. For instance: 'total_number_of_neurites' \n"
+        print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n\n"
 
     # ----------------------------------------------------------------------
 

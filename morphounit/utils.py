@@ -24,7 +24,7 @@ class NeuroM_MorphStats(sciunit.Model):
     """A class to interact with morphology files via the morphometrics-NeuroM's API (morph_stats)"""
 
     def __init__(self, model_name='NeuroM_MorphStats', morph_path=None,
-                 config_path=None, morph_stats_file=None, base_directory='.'):
+                 morph_stats_pred_file=None, base_directory='.'):
 
         sciunit.Model.__init__(self, name=model_name)
         self.description = "A class to interact with morphology files " \
@@ -32,15 +32,25 @@ class NeuroM_MorphStats(sciunit.Model):
         self.model_version = model_name
 
         self.morph_path = morph_path
-        self.config_path = config_path
 
-        # Defining output directory
+        # Defining output dir and files
         self.morph_stats_output = os.path.join(base_directory, 'validation_results', 'neuroM_morph_softChecks',
                                                self.model_version, datetime.now().strftime("%Y%m%d-%H%M%S"))
 
-        self.output_file = os.path.join(self.morph_stats_output, morph_stats_file)
+        self.output_file = os.path.join(self.morph_stats_output, morph_stats_pred_file)
 
+        # Creating the configuration file for morph_stats
+        self.config_path = self.set_morph_stats_config_file()
+
+        # Creating the prediction file with morph_stats
         self.morph_feature_info = self.set_morph_feature_info()
+
+    def set_morph_stats_config_file(self):
+
+        morph_stats_conf_file =
+        config_path = os.path.join(self.morph_stats_output, morph_stats_conf_file)
+
+        return config_path
 
     def set_morph_feature_info(self):
         """
@@ -98,19 +108,6 @@ class NeuroM_MorphStats(sciunit.Model):
     def get_morph_feature_info(self):
         return self.morph_feature_info
 
-    def neuroM_morph_stats_doc():
-        """Prints morph_stats's nomenclature constraints to be followed by the
-        user when specificying observation and configuration files"""
-
-        import neurom as nm
-        print 'Neurite types available:\n', [neurite_type.name for neurite_type in nm.NEURITE_TYPES[1:]]
-        print 'Neurite features available:\n', sorted(nm.fst.NEURITEFEATURES.keys())
-        print 'Neuron features available:\n', sorted(nm.fst.NEURONFEATURES.keys())
-
-        print "A summary statistic for each feature can be specified. Modes available:\n"
-        print "'min', 'max', 'median', 'mean', 'std'\n"
-
-
 class NeuroM_MorphStats_AddFeatures(NeuroM_MorphStats):
     """A class to interact with morphology files via the morphometrics-NeuroM's API (morph_stats).
     It is used to add more features to the prediction generated from the parent class,
@@ -121,7 +118,7 @@ class NeuroM_MorphStats_AddFeatures(NeuroM_MorphStats):
                  config_path=None, morph_stats_file=None, base_directory='.'):
 
         super(NeuroM_MorphStats_AddFeatures, self).__init__(model_name=model_name, morph_path=morph_path,
-                                                            config_path=config_path, morph_stats_file=morph_stats_file,
+                                                            morph_stats_file=morph_stats_file,
                                                             base_directory=base_directory)
         self.morph_feature_info = self.complete_prediction()
         self.morph_feature_info = self.pre_formatting()
