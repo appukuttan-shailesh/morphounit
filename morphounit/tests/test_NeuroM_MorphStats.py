@@ -44,8 +44,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
         # Cell features available
         cell_feats_avail = nm.fst.NEURONFEATURES.keys()
-        cell_feats_extra = ['soma_diameter']
-        cell_feats_avail.extend(cell_feats_extra)
 
         # Neurite features available
         neurite_feats_avail = nm.fst.NEURITEFEATURES.keys()
@@ -77,20 +75,20 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                         # Checking the NeuroM features for the cell
                         assert (feat_name in cell_feats_avail), \
                             "{} is not permitted for cells. Please, use one in the following list:\n {}" \
-                                .format(feat_name, sorted(cell_feats_avail))
+                            .format(feat_name, sorted(cell_feats_avail))
                         # Checking the statistical mode for the cell features
                         assert (stat_mode in stat_modes), \
                             "{} is not permitted for statistical modes. Please, use one in the following list:\n {}" \
-                                .format(stat_mode, stat_modes)
+                            .format(stat_mode, stat_modes)
                     elif feat_name in nm.fst.NEURITEFEATURES.keys():
                         assert (stat_mode in stat_modes), \
                             "{} is not permitted for statistical modes. Please, use one in the following list:\n {}" \
-                                .format(stat_mode, stat_modes)
+                            .format(stat_mode, stat_modes)
                     else:
                         # Checking the extra-NeuroM features for Neurites, if any
                         assert (key3 in neurite_feats_extra), \
                             "{} is not permitted for neurites. Please, use one in the following list:\n {}" \
-                                .format(key3, sorted(neurite_feats_avail))
+                            .format(key3, sorted(neurite_feats_avail))
         print 'OK \n'
 
         return None
@@ -122,28 +120,52 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         morph_stats_conf_file = os.path.splitext(obs_file_name)[0] + '_config.json'
         morph_stats_config_path = os.path.join(obs_dir, morph_stats_conf_file)
 
-        morph_stats_config_dict = dict()
         neurite_type_list = list()
+        feat_name_stat_mode_neurite_dict = dict()
+        feat_name_stat_mode_cell_dict = dict()
+        neurite_feats_extra_dict = dict()  # For non-morph_stats features
         for dict1 in observation.values():  # Dict. with cell's part-features dictionary pairs for each cell
             for key2, dict2 in dict1.items():  # Dict. with feature name-value pairs for each cell part:
                                                 #  neuron, apical_dendrite, basal_dendrite or axon
                 if key2 == 'neuron':
-                    morph_stats_config_dict.update({'neuron': dict()})
                     feat_name_stat_mode_cell_dict = dict()
                 else:
-                    neurite_type_list.append(key2)
-                    feat_name_stat_mode_neurite_dict = dict()
+                    neurite_type_list.append(key2.upper())
+                    neurite_feats_extra_dict.update({key2: []})
                 for key3 in dict2.keys():
                     feat_name, stat_mode = key3.split('_', 1)[1], key3.split('_', 1)[0]
-                    if key2 == 'neuron':
-                        feat_name_stat_mode_cell_dict.update({feat_name: [stat_mode]})
-                    elif feat_name in nm.fst.NEURITEFEATURES.keys():
-                        feat_name_stat_mode_neurite_dict.update({feat_name: [stat_mode]})
 
+                    if key2 == 'neuron':
+                        if feat_name in feat_name_stat_mode_cell_dict and \
+                                stat_mode not in feat_name_stat_mode_cell_dict[feat_name]:
+                            feat_name_stat_mode_cell_dict[feat_name].append(stat_mode)
+                        else:
+                            feat_name_stat_mode_cell_dict.update({feat_name: [stat_mode]})
+
+                    elif feat_name in nm.fst.NEURITEFEATURES.keys():
+                        if feat_name in feat_name_stat_mode_neurite_dict and \
+                                stat_mode not in feat_name_stat_mode_neurite_dict[feat_name]:
+                            feat_name_stat_mode_neurite_dict[feat_name].append(stat_mode)
+                        else:
+                            feat_name_stat_mode_neurite_dict.update({feat_name: [stat_mode]})
+                    else:
+                        neurite_feats_extra_dict[key2].append(key3)
+
+        # Morphometrics of morph_stats features to be computed
+        morph_stats_config_dict = dict()
         morph_stats_config_dict.update({'neurite_type': neurite_type_list,
-                                        'neurite': feat_name_stat_mode_neurite_dict})
-        morph_stats_config_dict['neuron'].update(feat_name_stat_mode_cell_dict)
-        print json.dumps(morph_stats_config_dict, sort_keys=True, indent=3)
+                                        'neurite': feat_name_stat_mode_neurite_dict,
+                                        'neuron': feat_name_stat_mode_cell_dict})
+        print 'Configuration file for morph_stats was completed: \n', \
+            json.dumps(morph_stats_config_dict, sort_keys=True, indent=3)
+
+        # Morphometrics of non-morph_stats features to be computed
+        for key, value in neurite_feats_extra_dict.items():
+            if not value:
+                del neurite_feats_extra_dict[key]
+        if neurite_feats_extra_dict:
+            print 'The following morphometrics will be extracted separately: \n', \
+                json.dumps(neurite_feats_extra_dict, sort_keys=True, indent=3)
 
         return morph_stats_config_path
 
