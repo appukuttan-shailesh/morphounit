@@ -24,7 +24,7 @@ class NeuroM_MorphStats(sciunit.Model):
     """A class to interact with morphology files via the morphometrics-NeuroM's API (morph_stats)"""
 
     def __init__(self, model_name='NeuroM_MorphStats', morph_path=None,
-                 config_path=None, morph_stats_pred_file=None, base_directory='.'):
+                 observation_path=None, morph_stats_pred_file=None, base_directory='.'):
 
         sciunit.Model.__init__(self, name=model_name)
         self.description = "A class to interact with morphology files " \
@@ -33,8 +33,12 @@ class NeuroM_MorphStats(sciunit.Model):
 
         # Locating the morphology file for morph_stats
         self.morph_path = morph_path
+
         # Locating the configuration path for morph_stats
-        self.config_path = config_path
+        obs_dir = os.path.dirname(observation_path)
+        obs_file_name = os.path.basename(observation_path)
+        morph_stats_conf_file = os.path.splitext(obs_file_name)[0] + '_config.json'
+        self.config_path = os.path.join(obs_dir, morph_stats_conf_file)
 
         # Defining output dir and files
         self.morph_stats_output = os.path.join(base_directory, 'validation_results', 'neuroM_morph_softChecks',
@@ -91,7 +95,7 @@ class NeuroM_MorphStats(sciunit.Model):
         # Saving NeuroM's morph_stats output in a formatted json-file
         with open(self.output_file, 'w') as fp:
             json.dump(mod_prediction, fp, sort_keys=True, indent=3)
-        os.remove(self.output_file)
+        # os.remove(self.output_file)
 
         return mod_prediction
 

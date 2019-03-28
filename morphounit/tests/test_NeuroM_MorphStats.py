@@ -115,11 +115,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         """ Creates a configuration file for morph_stats,
         following the structure of a raw observation JSON file (previously to SciUnit formatting)"""
 
-        obs_dir = os.path.dirname(observation_path)
-        obs_file_name = os.path.basename(observation_path)
-        morph_stats_conf_file = os.path.splitext(obs_file_name)[0] + '_config.json'
-        morph_stats_config_path = os.path.join(obs_dir, morph_stats_conf_file)
-
         neurite_type_list = list()
         feat_name_stat_mode_neurite_dict = dict()
         feat_name_stat_mode_cell_dict = dict()
@@ -159,12 +154,20 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         print 'Configuration file for morph_stats was completed: \n', \
             json.dumps(morph_stats_config_dict, sort_keys=True, indent=3)
 
+        obs_dir = os.path.dirname(observation_path)
+        obs_file_name = os.path.basename(observation_path)
+        # Saving NeuroM's morph_stats configuration file in JSON format
+        morph_stats_conf_file = os.path.splitext(obs_file_name)[0] + '_config.json'
+        morph_stats_config_path = os.path.join(obs_dir, morph_stats_conf_file)
+        with open(morph_stats_config_path, 'w') as fp:
+            json.dump(morph_stats_config_dict, fp, sort_keys=True, indent=3)
+
         # Morphometrics of non-morph_stats features to be computed
         for key, value in neurite_feats_extra_dict.items():
             if not value:
                 del neurite_feats_extra_dict[key]
         if neurite_feats_extra_dict:
-            print 'The following morphometrics will be extracted separately: \n', \
+            print 'The following morphometrics will be extracted separately and added to the model prediction: \n', \
                 json.dumps(neurite_feats_extra_dict, sort_keys=True, indent=3)
 
         return morph_stats_config_path
@@ -245,13 +248,9 @@ class NeuroM_MorphStats_Test(sciunit.Test):
     def generate_prediction(self, model, verbose=False):
         """Implementation of sciunit.Test.generate_prediction"""
 
-        # Creating the configuration file for morph_stats
-        # morph_stats_config_path = self.set_morph_stats_config_file()
-
         # Creating the prediction file with morph_stats
         self.path_test_output = model.morph_stats_output
         self.morp_path = model.morph_path
-        # mod_prediction = model.set_morph_feature_info(morph_stats_config_path)
         mod_prediction = model.set_morph_feature_info()
 
         """
