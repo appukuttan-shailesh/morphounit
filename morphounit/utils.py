@@ -84,13 +84,20 @@ class NeuroM_MorphStats(sciunit.Model):
             del mod_prediction[key0]
             mod_prediction.update({cell_ID: dict0})
 
-            # Regrouping all soma's features-values pairs into a unique 'soma' key inside mod_prediction
+            # Additional formatting for neurom.fst.NEURONFEATURES.keys(), when present.
+            # Missing the case of feature 'sholl_frequency' (under which group?) (ToDo)
+            # Regrouping all soma's and trunk's features-values pairs into two different keys inside mod_prediction
             soma_features = dict()
+            trunk_features = dict()
             for key, val in dict0.items():
                 if 'soma' in key:
                     soma_features.update({key: val})
                     del dict0[key]
                     dict0.update({"soma": soma_features})
+                elif 'trunk' in key:
+                    trunk_features.update({key: val})
+                    del dict0[key]
+                    dict0.update({"trunk": trunk_features})
 
         # Saving NeuroM's morph_stats output in a formatted json-file
         with open(self.output_file, 'w') as fp:
