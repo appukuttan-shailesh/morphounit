@@ -7,7 +7,6 @@ import numpy as np
 
 from datetime import datetime
 
-
 class neuroM_loader(sciunit.Model):
     def __init__(self, name="neuroM_loader", description="", model_path=None):
         sciunit.Model.__init__(self, name=name)
@@ -24,27 +23,28 @@ class NeuroM_MorphStats(sciunit.Model):
     """A class to interact with morphology files via the morphometrics-NeuroM's API (morph_stats)"""
 
     def __init__(self, model_name='NeuroM_MorphStats', morph_path=None,
-                 observation_path=None, morph_stats_pred_file=None, base_directory='.'):
+                 morph_stats_config_path=None, neuroM_extra_config_path=None,
+                 morph_stats_pred_file=None, base_directory='.'):
 
         sciunit.Model.__init__(self, name=model_name)
         self.description = "A class to interact with morphology files " \
                            "via the morphometrics-NeuroM's API (morph_stats)"
         self.model_version = model_name
 
-        # Locating the morphology file for morph_stats
-        self.morph_path = morph_path
+        # Setting the configuration file for morph_stats
+        self.morph_stats_config_path = morph_stats_config_path
+        # Setting the extra configuration file for NeuroM
+        self.neuroM_extra_config_path = neuroM_extra_config_path
 
-        # Locating the configuration path for morph_stats
-        obs_dir = os.path.dirname(observation_path)
-        obs_file_name = os.path.basename(observation_path)
-        morph_stats_conf_file = os.path.splitext(obs_file_name)[0] + '_config.json'
-        self.config_path = os.path.join(obs_dir, morph_stats_conf_file)
+        # Setting the morphology file to be processed by means of morph_stats
+        self.morph_path = morph_path
 
         # Defining output dir and files
         self.morph_stats_output = os.path.join(base_directory, 'validation_results', 'neuroM_morph_softChecks',
                                                self.model_version, datetime.now().strftime("%Y%m%d-%H%M%S"))
-        self.output_file = os.path.join(self.morph_stats_output, morph_stats_pred_file)
+        self.output_pred_file = os.path.join(self.morph_stats_output, morph_stats_pred_file)
 
+    # ----------------------------------------------------------------------
 
     def set_morph_feature_info(self):
         """
@@ -70,11 +70,12 @@ class NeuroM_MorphStats(sciunit.Model):
             os.makedirs(self.morph_stats_output)
 
         try:
-            os.system('morph_stats -C {} -o {} {}'.format(self.config_path, self.output_file, self.morph_path))
+            os.system('morph_stats -C {} -o {} {}'.format(self.morph_stats_config_path,
+                                                          self.output_pred_file, self.morph_path))
         except IOError:
             print "Please specify the paths to the morphology directory and configuration file for morph_stats"
 
-        with open(self.output_file, 'r') as fp:
+        with open(self.output_pred_file, 'r') as fp:
             mod_prediction = json.load(fp)
         for key0, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs for each cell
             # Correcting cell's ID, given by some NeuroM versions:
@@ -99,12 +100,117 @@ class NeuroM_MorphStats(sciunit.Model):
                     del dict0[key]
                     dict0.update({"trunk": trunk_features})
 
-        # Saving NeuroM's morph_stats output in a formatted json-file
-        with open(self.output_file, 'w') as fp:
-            json.dump(mod_prediction, fp, sort_keys=True, indent=3)
-        # os.remove(self.output_file)
+        # Additional formatting to morph_stats output:
+        # reversing some changes introduced into original NeuroM ('fst' module) nomenclature,
+        # e.g., number in feature names is changed from plural to singular and 'radii' to 'radius'
+        # The configuration file for morph_stats is taken as the reference, to re-format the output file
+        # (instead of taking the observation file as reference, to keep independence between Model and Test classes)
+        for cell_ID, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs
+                                                        # for each cell
+            for cell_part, dict1 in dict0.items():
+                for feat_name, value in dict1.items():
+                    if 'radius' in feat_name:
+                        new_key = feat_name.replace("radius", "radii")
+                        del dict1[feat_name]
+                        dict1.update({new_key: value})
 
-        return mod_prediction
+        extra_file_exists = os.path.isfile(self.neuroM_extra_config_path)
+        if extra_file_exists:
+            with open(self.neuroM_extra_config_path, 'r') as fp:
+                morph_extra_dict = json.load(fp)
+
+        """
+        def _stat_name(feat_name, stat_mode):
+            '''Set stat name based on feature name and stat mode'''
+            if feat_name[-1] == 's':
+                feat_name = feat_name[:-1]
+            if feat_name == 'soma_radii':
+                feat_name = 'soma_radius'
+            if stat_mode == 'raw':
+                return feat_name
+        """
+
+        # Saving NeuroM's morph_stats output in a formatted json-file
+        with open(self.output_pred_file, 'w') as fp:
+            json.dump(mod_prediction, fp, sort_keys=True, indent=3)
+
+        return self.output_pred_file
+
+    # ----------------------------------------------------------------------
+
+    def complete_morph_feature_info(self):
+        """Adding more features by means of other NeuroM's functionalities
+        to the prediction generated by function 'set_morph_feature_info',
+        which uses just NeuroM's API for morph_stats"""
+
+        extra_file_exists = os.path.isfile(self.neuroM_extra_config_path)
+        if not extra_file_exists:
+            return
+        with open(self.neuroM_extra_config_path, 'r') as fp:
+            morph_extra_dict = json.load(fp)
+
+        # Adding more neurite's features, if requested:
+        # field diameter, bounding-box -X,Y,Z- extents and -largest,shortest- principal extents
+        with open(self.output_pred_file, 'r') as fp:
+            mod_prediction = json.load(fp)
+
+        mapping = lambda section: section.points
+        for neurite_name, extra_feat_list in morph_extra_dict.items(): # Dict. with neurite names and
+                                                                        # extra features to be computed
+            for cell_ID, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs
+                                                            # for each cell
+                if os.path.isdir(self.morph_path):
+                    neuron_path = os.path.join(self.morph_path, cell_ID)
+                else:
+                    neuron_path = self.morph_path
+                neuron_model = nm.load_neuron(neuron_path)
+
+                for cell_part, dict1 in dict0.items():
+                    if cell_part == neurite_name:
+                        neurite_filter = lambda neurite: neurite.type == getattr(nm.NeuriteType, cell_part)
+                        neurite_points = [neurite_points for neurite_points in
+                                          nm.iter_neurites(neuron_model, mapping, neurite_filter)]
+                        neurite_points = np.concatenate(neurite_points)
+                        neurite_cloud = neurite_points[:, 0:3]
+
+                        for feat_name in extra_feat_list:
+                            # Compute the neurite's bounding-box -X,Y,Z- extents
+                            if feat_name=='neurite_X_extent':
+                                neurite_X_extent = np.max(neurite_cloud[:, 0], axis=0) - \
+                                                   np.min(neurite_cloud[:, 0], axis=0)
+                                dict1.update({"neurite_X_extent": neurite_X_extent})
+
+                            elif feat_name=='neurite_Y_extent':
+                                neurite_Y_extent = np.max(neurite_cloud[:, 1], axis=0) - \
+                                                   np.min(neurite_cloud[:, 1], axis=0)
+                                dict1.update({"neurite_Y_extent": neurite_Y_extent})
+
+                            elif feat_name=='neurite_Z_extent':
+                                neurite_Z_extent = np.max(neurite_cloud[:, 2], axis=0) - \
+                                                   np.min(neurite_cloud[:, 2], axis=0)
+                                dict1.update({"neurite_Z_extent": neurite_Z_extent})
+
+                            # Compute the neurite's principal extents
+                            elif feat_name=='neurite_shortest_extent':
+                                # Compute the neurite's shortest principal extents
+                                principal_extents = sorted(nm.morphmath.principal_direction_extent(neurite_cloud))
+                                dict1.update({"neurite_shortest_extent": principal_extents[0]})
+
+                            elif feat_name=='neurite_largest_extent':
+                                # Compute the neurite's largest principal extents
+                                principal_extents = sorted(nm.morphmath.principal_direction_extent(neurite_cloud))
+                                dict1.update({"neurite_largest_extent": principal_extents[-1]})
+
+                            # Compute the neurite-field diameter
+                            elif feat_name=='neurite_field_diameter':
+                                neurite_field_diameter = nm.morphmath.polygon_diameter(neurite_cloud)
+                                dict1.update({"neurite_field_diameter": neurite_field_diameter})
+
+        # Saving NeuroM's morph_stats output in a formatted json-file
+        with open(self.output_pred_file, 'w') as fp:
+            json.dump(mod_prediction, fp, sort_keys=True, indent=3)
+
+        return
 
 
 class NeuroM_MorphStats_AddFeatures(NeuroM_MorphStats):
@@ -123,50 +229,10 @@ class NeuroM_MorphStats_AddFeatures(NeuroM_MorphStats):
         self.morph_feature_info = self.pre_formatting()
         # self.morph_feature_info = self.avg_prediction_pop()
         # self.morph_feature_info = self.pre_formatting_pop()
+
     # ----------------------------------------------------------------------
 
-    def complete_prediction(self):
-        """Adding more features by means of other NeuroM's functionalities
-        to the prediction generated by the parent class, which uses just morph_stats"""
 
-        mod_prediction = self.set_morph_feature_info()
-
-        mapping = lambda section: section.points
-        for cell_ID, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs for each cell
-
-            # Adding more neurite's features:
-            # field diameter, bounding-box -X,Y,Z- extents and -largest,shortest- principal extents
-            if os.path.isdir(self.morph_path):
-                neuron_path = os.path.join(self.morph_path, cell_ID)
-            else:
-                neuron_path = self.morph_path
-            neuron_model = nm.load_neuron(neuron_path)
-            for key1, dict1 in dict0.items():  # Dict. with feature name-value pairs for each cell part:
-                                                # soma, apical_dendrite, basal_dendrite or axon
-                if any(sub_str in key1 for sub_str in ['axon', 'dendrite']):
-                    cell_part = key1
-                    filter = lambda neurite: neurite.type == getattr(nm.NeuriteType, cell_part)
-                    neurite_points = [p for p in nm.iter_neurites(neuron_model, mapping, filter)]
-                    neurite_points = np.concatenate(neurite_points)
-                    neurite_cloud = neurite_points[:, 0:3]
-
-                    # Compute the neurite's bounding-box -X,Y,Z- extents
-                    neurite_X_extent, neurite_Y_extent, neurite_Z_extent = \
-                        np.max(neurite_cloud, axis=0) - np.min(neurite_cloud, axis=0)
-                    dict1.update({"neurite_X_extent": neurite_X_extent})
-                    dict1.update({"neurite_Y_extent": neurite_Y_extent})
-                    dict1.update({"neurite_Z_extent": neurite_Z_extent})
-
-                    # Compute the neurite's -largest, shortest- principal extents
-                    principal_extents = sorted(nm.morphmath.principal_direction_extent(neurite_cloud))
-                    dict1.update({"neurite_shortest_extent": principal_extents[0]})
-                    dict1.update({"neurite_largest_extent": principal_extents[-1]})
-
-                    # Compute the neurite-field diameter
-                    # neurite_field_diameter = nm.morphmath.polygon_diameter(neurite_cloud)
-                    # dict1.update({"neurite_field_diameter": neurite_field_diameter})
-
-        return mod_prediction
 
     # ----------------------------------------------------------------------
 
