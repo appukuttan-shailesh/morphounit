@@ -214,7 +214,34 @@ class NeuroM_MorphStats(sciunit.Model):
                                 neurite_field_diameter = nm.morphmath.polygon_diameter(neurite_cloud)
                                 dict1.update({"neurite_field_diameter": neurite_field_diameter})
 
-        # Saving NeuroM's morph_stats output in a formatted json-file
+        # Saving NeuroM's output in a formatted json-file
+        with open(self.output_pred_file, 'w') as fp:
+            json.dump(mod_prediction, fp, sort_keys=True, indent=3)
+
+        return
+
+    # ----------------------------------------------------------------------
+
+    def pre_formatting(self):
+        """Formatting the prediction by adding (non-functional) units (as strings).
+        Python package 'quantities' is not used yet, this is implemented in the Test class"""
+
+        with open(self.output_pred_file, 'r') as fp:
+            mod_prediction = json.load(fp)
+
+        dim_um = ['radii', 'diameter', 'length', 'distance', 'extent']
+        for dict1 in mod_prediction.values():  # Set of cell's part-features dictionary pairs for each cell
+
+            # Adding the right units and converting feature values to strings
+            for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part:
+                                          # soma, apical_dendrite, basal_dendrite or axon
+                for key, val in dict2.items():
+                    if any(sub_str in key for sub_str in dim_um):
+                        dict2[key] = dict(value=str(val) + ' um')
+                    else:
+                        dict2[key] = dict(value=str(val))
+
+        # Saving NeuroM's output in a formatted json-file
         with open(self.output_pred_file, 'w') as fp:
             json.dump(mod_prediction, fp, sort_keys=True, indent=3)
 
@@ -244,36 +271,7 @@ class NeuroM_MorphStats_AddFeatures(NeuroM_MorphStats):
 
     # ----------------------------------------------------------------------
 
-    def pre_formatting(self):
-        """Formatting the prediction by adding (non-functional) units (as strings).
-        Python package 'quantities' is not used yet, this is implemented in the Test class"""
 
-        mod_prediction = self.set_morph_feature_info()
-
-        dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
-        for dict1 in mod_prediction.values():  # Set of cell's part-features dictionary pairs for each cell
-
-            # Adding the right units and converting feature values to strings
-            for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part:
-                                          # soma, apical_dendrite, basal_dendrite or axon
-                for key, val in dict2.items():
-                    if any(sub_str in key for sub_str in ['radius', 'radii']):
-                        del dict2[key]
-                        val *= 2
-                        key = key.replace("radius", "diameter")
-                        key = key.replace("radii", "diameter")
-                    if any(sub_str in key for sub_str in dim_um):
-                        dict2[key] = dict(value=str(val) + ' um')
-                    else:
-                        dict2[key] = dict(value=str(val))
-
-        """
-        # Saving NeuroM's morph_stats output in a formatted json-file
-        with open(self.output_file, 'w') as fp:
-            json.dump(mod_prediction, fp, sort_keys=True, indent=3)
-        """
-
-        return mod_prediction
 
     # ----------------------------------------------------------------------
 

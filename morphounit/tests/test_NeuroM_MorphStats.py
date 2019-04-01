@@ -221,7 +221,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         It splits the values of mean, std and value to numeric quantities
         and their units (via quantities package)
         """
-        dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
+        dim_um = ['radii', 'diameter', 'length', 'distance', 'extent']
         dim_non = ['order', 'number']
         for dict1 in data.values():  # Dict. with cell's part-features dictionary pairs for each cell
             for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part: soma,
@@ -267,6 +267,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         self.morp_path = model.morph_path
         mod_prediction_path = model.set_morph_feature_info()
         model.complete_morph_feature_info()
+        model.pre_formatting()
 
         with open(mod_prediction_path, 'r+') as fp:
             mod_prediction = json.load(fp)
