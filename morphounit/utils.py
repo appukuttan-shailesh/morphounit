@@ -88,47 +88,55 @@ class NeuroM_MorphStats(sciunit.Model):
             # Additional formatting for neurom.fst.NEURONFEATURES.keys(), when present.
             # Missing the case of feature 'sholl_frequency' (under which group?) (ToDo)
             # Regrouping all soma's and trunk's features-values pairs into two different keys inside mod_prediction
-            soma_features = dict()
-            trunk_features = dict()
+            soma_feat_name_stat_mode = dict()
+            trunk_feat_name_stat_mode = dict()
             for key, val in dict0.items():
                 if 'soma' in key:
-                    soma_features.update({key: val})
+                    soma_feat_name_stat_mode.update({key: val})
                     del dict0[key]
-                    dict0.update({"soma": soma_features})
+                    dict0.update({"soma": soma_feat_name_stat_mode})
                 elif 'trunk' in key:
-                    trunk_features.update({key: val})
+                    trunk_feat_name_stat_mode.update({key: val})
                     del dict0[key]
-                    dict0.update({"trunk": trunk_features})
+                    dict0.update({"trunk": trunk_feat_name_stat_mode})
 
         # Additional formatting to morph_stats output:
         # reversing some changes introduced into original NeuroM ('fst' module) nomenclature,
-        # e.g., number in feature names is changed from plural to singular and 'radii' to 'radius'
+        # e.g., number in feature names is changed from plural to singular, and sometimes 'radii' to 'radius'
         # The configuration file for morph_stats is taken as the reference, to re-format the output file
         # (instead of taking the observation file as reference, to keep independence between Model and Test classes)
+        with open(self.morph_stats_config_path, 'r') as fp:
+            morph_stats_config_dict = json.load(fp)
+        # print 'morph_stats_config_dict = ', json.dumps(morph_stats_config_dict, sort_keys=True, indent=3)
+        for key0, dict0 in morph_stats_config_dict.items():
+            if key0 == 'neurite':
+                neurite_feats_plural = dict0.keys()
+            elif key0 == 'neuron':
+                neuron_feats_plural = dict0.keys()
+
         for cell_ID, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs
                                                         # for each cell
             for cell_part, dict1 in dict0.items():
-                for feat_name, value in dict1.items():
-                    if 'radius' in feat_name:
-                        new_key = feat_name.replace("radius", "radii")
-                        del dict1[feat_name]
+                for feat_name_stat_mode, value in dict1.items():
+
+                    new_key = ''
+                    if 'radii' in feat_name_stat_mode:
+                        continue
+                    # Replacing "radius" by "radii", as in original NeuroM's nomenclature
+                    elif 'radius' in feat_name_stat_mode:
+                        new_key = feat_name_stat_mode.replace("radius", "radii")
+                    # Recovering the plural, as in original NeuroM's nomenclature
+                    elif any(sub_str in cell_part for sub_str in ['trunk', 'soma']) and \
+                            any(feat_name_plural[:-1] in feat_name_stat_mode
+                                for feat_name_plural in neuron_feats_plural) \
+                            or any(feat_name_plural[:-1] in feat_name_stat_mode
+                                   for feat_name_plural in neurite_feats_plural):
+                        new_key = feat_name_stat_mode + 's'
+
+                    if new_key:
+                        # print 'Changing %s -> %s = \n' % (feat_name_stat_mode, new_key)
+                        del dict1[feat_name_stat_mode]
                         dict1.update({new_key: value})
-
-        extra_file_exists = os.path.isfile(self.neuroM_extra_config_path)
-        if extra_file_exists:
-            with open(self.neuroM_extra_config_path, 'r') as fp:
-                morph_extra_dict = json.load(fp)
-
-        """
-        def _stat_name(feat_name, stat_mode):
-            '''Set stat name based on feature name and stat mode'''
-            if feat_name[-1] == 's':
-                feat_name = feat_name[:-1]
-            if feat_name == 'soma_radii':
-                feat_name = 'soma_radius'
-            if stat_mode == 'raw':
-                return feat_name
-        """
 
         # Saving NeuroM's morph_stats output in a formatted json-file
         with open(self.output_pred_file, 'w') as fp:

@@ -274,9 +274,8 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
         self.prediction_txt = copy.deepcopy(mod_prediction)
 
-        # prediction = self.format_data(mod_prediction)
-        # return prediction
-        return mod_prediction
+        prediction = self.format_data(mod_prediction)
+        return prediction
 
     # ----------------------------------------------------------------------
 
