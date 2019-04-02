@@ -23,8 +23,9 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         self.description = "Tests a set of cell's morpho-features in a digitally reconstructed neuron"
         # require_capabilities = (mph_cap.ProvidesMorphFeatureInfo,)
 
-        # Checks raw observation data complance with NeuroM's nomenclature
+        # Checks raw observation data compliance with NeuroM's nomenclature
         self.check_observation(observation)
+        self.raw_observation = observation
 
         # Creates a configuration file for morph_stats, following the structure of a raw observation data
         self.morph_stats_config_path, self.neuroM_extra_config_path = \
@@ -154,8 +155,8 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         morph_stats_config_dict.update({'neurite_type': neurite_type_list,
                                         'neurite': feat_name_stat_mode_neurite_dict,
                                         'neuron': feat_name_stat_mode_cell_dict})
-        print 'Configuration file for morph_stats was completed: \n', \
-            json.dumps(morph_stats_config_dict, sort_keys=True, indent=3)
+        print 'Configuration file for morph_stats was completed. \n', \
+            # json.dumps(morph_stats_config_dict, sort_keys=True, indent=3)
 
         obs_dir = os.path.dirname(observation_path)
         obs_file_name = os.path.basename(observation_path)
@@ -221,11 +222,14 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         It splits the values of mean, std and value to numeric quantities
         and their units (via quantities package)
         """
-        dim_um = ['radii', 'diameter', 'length', 'distance', 'extent']
-        dim_non = ['order', 'number']
+        dim_non = ['order', 'number', 'asymmetry', 'rate']
+        dim_um = ['radii', 'length', 'distance', 'extent']
+        dim_umSq = ['area']
+        dim_umCb = ['volume']
+        dim_deg = ['angle']
         for dict1 in data.values():  # Dict. with cell's part-features dictionary pairs for each cell
-            for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part: soma,
-                # apical_dendrite, basal_dendrite or axon
+            for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part:
+                                            # neuron, apical_dendrite, basal_dendrite or axon
                 for dict3 in dict2.values():  # Dict. with 'value', 'mean' and 'std' values
                     for key, val in dict3.items():
                         quantity_parts = val.split()
@@ -249,8 +253,8 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
         # Checking format of the observation data
         for dict1 in observation.values():  # Dict. with cell's part-features dictionary pairs for each cell
-            for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part: soma,
-                # apical_dendrite, basal_dendrite or axon
+            for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part:
+                                            # neuron, apical_dendrite, basal_dendrite or axon
                 for dict3 in dict2.values():  # Dict. with 'value' or 'mean' and 'std' values
                     for val in dict3.values():
                         assert type(val) is quantities.Quantity, \
@@ -265,14 +269,28 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         # Creating the prediction file with morph_stats
         self.path_test_output = model.morph_stats_output
         self.morp_path = model.morph_path
+
         mod_prediction_path = model.set_morph_feature_info()
+        # Deleting some neurite's morphometrics added by morph_stats, but not present in the observation file
+        with open(mod_prediction_path, 'r') as fp:
+            mod_prediction_temp = json.load(fp)
+        mod_prediction = copy.deepcopy(mod_prediction_temp)
+        cell_t = self.raw_observation.keys()[0]  # Cell type
+        for cell_ID, cell_dict in mod_prediction_temp.items():
+            for cell_part, cell_part_dict in cell_dict.items():
+                for feat_name_stat_mode in cell_part_dict:
+                    if cell_part != 'neuron' and feat_name_stat_mode not in self.raw_observation[cell_t][cell_part]:
+                        del mod_prediction[cell_ID][cell_part][feat_name_stat_mode]
+        with open(mod_prediction_path, 'w') as fp:
+            json.dump(mod_prediction, fp, sort_keys=True, indent=3)
+
         model.complete_morph_feature_info()
         model.pre_formatting()
 
-        with open(mod_prediction_path, 'r+') as fp:
+        with open(mod_prediction_path, 'r') as fp:
             mod_prediction = json.load(fp)
-        print 'prediction file: \n', json.dumps(mod_prediction, sort_keys=True, indent=3)
-
+        os.remove(mod_prediction_path)
+        # print 'prediction file: \n', json.dumps(mod_prediction, sort_keys=True, indent=3)
         self.prediction_txt = copy.deepcopy(mod_prediction)
 
         prediction = self.format_data(mod_prediction)
@@ -297,7 +315,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
             score_feat_dict.update({key0: obs_features})
             scores_cell_list = list()
-            for key1 in score_feat_dict[key0]:  # cell's part: soma, axon, apical_dendrite or basal_dendrite
+            for key1 in score_feat_dict[key0]:  # cell's part: neuron, axon, apical_dendrite or basal_dendrite
                 for key2 in score_feat_dict[key0][key1]:  # features names
 
                     score_feat_value = sci_scores.ZScore.compute(observation[cell_t][key1][key2],
