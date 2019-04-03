@@ -29,7 +29,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
         # Creates a configuration file for morph_stats, following the structure of a raw observation data
         self.morph_stats_config_path, self.neuroM_extra_config_path = \
-            self.set_morph_stats_config_file(observation, observation_path)
+            self.set_morph_stats_config_file(observation=observation, observation_path=observation_path)
 
         self.figures = []
         observation = self.format_data(observation)
@@ -115,7 +115,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
     # ----------------------------------------------------------------------
 
-    def set_morph_stats_config_file(self, observation, observation_path):
+    def set_morph_stats_config_file(self, observation=None, observation_path=None):
         """ Creates a configuration file for morph_stats,
         following the structure of a raw observation JSON file (previously to SciUnit formatting)"""
 
