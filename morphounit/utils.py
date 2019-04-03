@@ -24,7 +24,7 @@ class NeuroM_MorphStats(sciunit.Model):
 
     def __init__(self, model_name='NeuroM_MorphStats', morph_path=None,
                  morph_stats_config_path=None, neuroM_extra_config_path=None,
-                 morph_stats_pred_file=None, base_directory='.'):
+                 neuroM_pred_file=None, base_directory='.'):
 
         sciunit.Model.__init__(self, name=model_name)
         self.description = "A class to interact with morphology files " \
@@ -42,7 +42,7 @@ class NeuroM_MorphStats(sciunit.Model):
         # Defining output dir and files
         self.morph_stats_output = os.path.join(base_directory, 'validation_results', 'neuroM_morph_softChecks',
                                                self.model_version, datetime.now().strftime("%Y%m%d-%H%M%S"))
-        self.output_pred_file = os.path.join(self.morph_stats_output, morph_stats_pred_file)
+        self.output_pred_file = os.path.join(self.morph_stats_output, neuroM_pred_file)
 
     # ----------------------------------------------------------------------
 
