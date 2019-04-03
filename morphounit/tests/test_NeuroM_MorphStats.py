@@ -155,8 +155,8 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         morph_stats_config_dict.update({'neurite_type': neurite_type_list,
                                         'neurite': feat_name_stat_mode_neurite_dict,
                                         'neuron': feat_name_stat_mode_cell_dict})
-        print 'Configuration file for morph_stats was completed. \n', \
-            # json.dumps(morph_stats_config_dict, sort_keys=True, indent=3)
+        # print 'Configuration file for morph_stats was completed. \n', \
+        #  json.dumps(morph_stats_config_dict, sort_keys=True, indent=3)
 
         obs_dir = os.path.dirname(observation_path)
         obs_file_name = os.path.basename(observation_path)
