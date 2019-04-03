@@ -158,6 +158,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         print 'Configuration file for morph_stats was completed. \n', \
             # json.dumps(morph_stats_config_dict, sort_keys=True, indent=3)
 
+        print 'observation_path = %s \n' % observation_path
         obs_dir = os.path.dirname(observation_path)
         obs_file_name = os.path.basename(observation_path)
 
