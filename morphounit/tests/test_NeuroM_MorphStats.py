@@ -63,7 +63,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                                     stat_modes)
         """
 
-        print "Checking observation file compliance with NeuroM's ('fst' module) nomenclature..."
+        # print "Checking observation file compliance with NeuroM's ('fst' module) nomenclature..."
         for dict1 in observation.values():  # Dict. with cell's part-features dictionary pairs for each cell
             for key2, dict2 in dict1.items():  # Dict. with feature name-value pairs for each cell part:
                                                 #  neuron, apical_dendrite, basal_dendrite or axon
@@ -91,7 +91,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                         assert (key3 in neurite_feats_extra), \
                             "{} is not permitted for neurites. Please, use one in the following list:\n {}" \
                             .format(key3, sorted(neurite_feats_avail))
-        print 'OK \n'
+        # print 'OK \n'
 
         return None
 
@@ -158,7 +158,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         print 'Configuration file for morph_stats was completed. \n', \
             # json.dumps(morph_stats_config_dict, sort_keys=True, indent=3)
 
-        print 'observation_path = %s \n' % observation_path
         obs_dir = os.path.dirname(observation_path)
         obs_file_name = os.path.basename(observation_path)
 
@@ -180,8 +179,8 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         if extra_file_exists:
             os.remove(neuroM_extra_config_path)
         if neurite_feats_extra_dict:
-            print 'The following morphometrics will be extracted separately and added to the model prediction: \n', \
-                json.dumps(neurite_feats_extra_dict, sort_keys=True, indent=3)
+            # print 'The following morphometrics will be extracted separately and added to the model prediction: \n', \
+            json.dumps(neurite_feats_extra_dict, sort_keys=True, indent=3)
             # Saving NeuroM's configuration extra-file in JSON format
             with open(neuroM_extra_config_path, 'w') as fp:
                 json.dump(neurite_feats_extra_dict, fp, sort_keys=True, indent=3)
