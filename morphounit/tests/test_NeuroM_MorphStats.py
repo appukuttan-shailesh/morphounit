@@ -18,7 +18,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
     """Tests a set of cell's morphological features"""
     score_type = mph_scores.CombineZScores
 
-    def __init__(self, observation=None, observation_path=None, name="NeuroM MorphStats"):
+    def __init__(self, observation=None, name="NeuroM MorphStats"):
 
         self.description = "Tests a set of cell's morpho-features in a digitally reconstructed neuron"
         # require_capabilities = (mph_cap.ProvidesMorphFeatureInfo,)
@@ -29,7 +29,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
         # Creates a configuration file for morph_stats, following the structure of a raw observation data
         self.morph_stats_config_path, self.neuroM_extra_config_path = \
-            self.set_morph_stats_config_file(observation=observation, observation_path=observation_path)
+            self.set_morph_stats_config_file(observation=observation)
 
         self.figures = []
         observation = self.format_data(observation)
@@ -115,7 +115,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
     # ----------------------------------------------------------------------
 
-    def set_morph_stats_config_file(self, observation=None, observation_path=None):
+    def set_morph_stats_config_file(self, model, observation=None):
         """ Creates a configuration file for morph_stats,
         following the structure of a raw observation JSON file (previously to SciUnit formatting)"""
 
@@ -158,12 +158,14 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         # print 'Configuration file for morph_stats was completed. \n', \
         #  json.dumps(morph_stats_config_dict, sort_keys=True, indent=3)
 
-        obs_dir = os.path.dirname(observation_path)
-        obs_file_name = os.path.basename(observation_path)
+        self.path_test_output = model.morph_stats_output
+        obs_dir = self.path_test_output
+        # obs_dir = os.path.dirname(observation_path)
+        # obs_file_name = os.path.basename(observation_path)
 
         # Saving NeuroM's morph_stats configuration file in JSON format
-        morph_stats_conf_file = os.path.splitext(obs_file_name)[0] + '_config.json'
-        morph_stats_config_path = os.path.join(obs_dir, morph_stats_conf_file)
+        # morph_stats_conf_file = os.path.splitext(obs_file_name)[0] + '_config.json'
+        morph_stats_config_path = os.path.join(obs_dir, 'morph_stats_config.json')
         with open(morph_stats_config_path, 'w') as fp:
             json.dump(morph_stats_config_dict, fp, sort_keys=True, indent=3)
 
@@ -172,8 +174,8 @@ class NeuroM_MorphStats_Test(sciunit.Test):
             if not value:
                 del neurite_feats_extra_dict[key]
 
-        neuroM_extra_config_file = os.path.splitext(obs_file_name)[0] + '_extra.json'
-        neuroM_extra_config_path = os.path.join(obs_dir, neuroM_extra_config_file)
+        # neuroM_extra_config_file = os.path.splitext(obs_file_name)[0] + '_extra.json'
+        neuroM_extra_config_path = os.path.join(obs_dir, 'neuroM_extra_config.json')
         # Remove existing file, if any
         extra_file_exists = os.path.isfile(neuroM_extra_config_path)
         if extra_file_exists:
@@ -267,7 +269,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         """Implementation of sciunit.Test.generate_prediction"""
 
         # Creating the prediction file with morph_stats
-        self.path_test_output = model.morph_stats_output
         self.morp_path = model.morph_path
 
         mod_prediction_path = model.set_morph_feature_info()
