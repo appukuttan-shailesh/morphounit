@@ -166,7 +166,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
     # ----------------------------------------------------------------------
 
-    def set_morph_stats_config_file(self, model=model, observation=None):
+    def set_morph_stats_config_file(self, model=None, observation=None):
         """ Creates a configuration file for morph_stats,
         following the structure of a raw observation JSON file (previously to SciUnit formatting)"""
 
