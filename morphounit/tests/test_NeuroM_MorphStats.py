@@ -27,10 +27,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         self.check_observation(observation)
         self.raw_observation = observation
 
-        # Creates a configuration file for morph_stats, following the structure of a raw observation data
-        self.morph_stats_config_path, self.neuroM_extra_config_path = \
-            self.set_morph_stats_config_file(observation=observation)
-
         self.figures = []
         observation = self.format_data(observation)
         sciunit.Test.__init__(self, observation, name)
@@ -97,25 +93,80 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
     # ----------------------------------------------------------------------
 
-    def neuroM_morph_stats_doc(self, neuron_parts_avail, cell_feats_avail,
-                               neurite_feats_avail, neurite_feats_extra, stat_modes):
-        """Prints NeuroM ('fst' module) nomenclature constraints to be followed
-        by the user when specifying observation files"""
+    def validate_observation(self, observation):
 
-        print 'Cell parts available:\n', sorted(neuron_parts_avail), '\n'
-        print 'Cell features available:\n', sorted(cell_feats_avail), '\n'
-        print 'Neurite features available:\n', sorted(neurite_feats_avail), '\n'
-        print 'A summary statistics must be indicated for each feature, with the ' \
-              'exception of those contained in the set ', neurite_feats_extra, \
-            '. Statistics modes available: ', stat_modes, '\n'
-        # How to specify feature_name = mode + feature
-        print "To that end, a prefix formed with the stats. mode intended, followed by '_', " \
-              "should be added to the feature name. For instance: 'total_number_of_neurites' \n"
-        print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n\n"
+        # Checking format of the observation data
+        for dict1 in observation.values():  # Dict. with cell's part-features dictionary pairs for each cell
+            for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part:
+                                            # neuron, apical_dendrite, basal_dendrite or axon
+                for dict3 in dict2.values():  # Dict. with 'value' or 'mean' and 'std' values
+                    for val in dict3.values():
+                        assert type(val) is quantities.Quantity, \
+                            sciunit.Error(("Observation must be of the form "
+                                           "{'mean': 'XX units_str','std': 'YY units_str'}"))
+    # ----------------------------------------------------------------------
+
+    def format_data(self, data):
+
+        """
+        This accepts data input in the form:
+        ***** (observation) *****
+        {"cell_kind": { "cell_part_1": {'morph_feature_name_11': {'mean value': 'X11_mean units_str', 'std': 'X11_std units_str'},
+                                        'morph_feature_name_12': {'mean value': 'X12_mean units_str', 'std': 'X12_std units_str'},
+                                        ... },
+                        "cell_part_2": {'morph_feature_name_21': {'mean value': 'X21_mean units_str', 'std': 'X21_std units_str'},
+                                        'morph_feature_name_22': {'mean value': 'X22_mean units_str', 'std': 'X22_std units_str'},
+                                        ... },
+                        ... }
+        }
+        ***** (prediction) *****
+        {"cell1_ID": { 'cell_part_1': {'morph_feature_name_11': {'value': 'X11 units_str'},
+                                       'morph_feature_name_12': {'value': 'X12 units_str'},
+                                        ... },
+                       'cell_part_2': {'morph_feature_name_21': {'value': 'X21 units_str'},
+                                       'morph_feature_name_22': {'value': 'X22 units_str'},
+                                        ... },
+                       ... }
+         "cell2_ID": { 'cell_part_1': {'morph_feature_name_11': {'value': 'Y11 units_str'},
+                                       'morph_feature_name_12': {'value': 'Y12 units_str'},
+                                        ... },
+                       'cell_part_2': {'morph_feature_name_21': {'value': 'Y21 units_str'},
+                                       'morph_feature_name_22': {'value': 'Y22 units_str'},
+                                        ... },
+                       ... }
+        ... }
+
+        It splits the values of mean, std and value to numeric quantities
+        and their units (via quantities package)
+        """
+        dim_non = ['order', 'number', 'asymmetry', 'rate']
+        dim_um = ['radii', 'length', 'distance', 'extent']
+        dim_umSq = ['area']
+        dim_umCb = ['volume']
+        dim_deg = ['angle']
+        for dict1 in data.values():  # Dict. with cell's part-features dictionary pairs for each cell
+            for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part:
+                                            # neuron, apical_dendrite, basal_dendrite or axon
+                for dict3 in dict2.values():  # Dict. with 'value', 'mean' and 'std' values
+                    for key, val in dict3.items():
+                        quantity_parts = val.split()
+                        number, units_str = float(quantity_parts[0]), " ".join(quantity_parts[1:])
+                        try:
+                            if any(sub_str in key for sub_str in dim_um):
+                                assert (units_str == quantities.um | units_str == quantities.mm), \
+                                    sciunit.Error("Values not in appropriate format. Required units: mm or um")
+                            elif any(sub_str in key for sub_str in dim_non):
+                                assert (units_str == quantities.dimensionless), \
+                                    sciunit.Error("Values not in appropriate format. Required units: ",
+                                                  quantities.dimensionless)
+                        finally:
+                            dict3[key] = quantities.Quantity(number, units_str)
+
+        return data
 
     # ----------------------------------------------------------------------
 
-    def set_morph_stats_config_file(self, model, observation=None):
+    def set_morph_stats_config_file(self, model=model, observation=None):
         """ Creates a configuration file for morph_stats,
         following the structure of a raw observation JSON file (previously to SciUnit formatting)"""
 
@@ -191,82 +242,30 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
     # ----------------------------------------------------------------------
 
-    def format_data(self, data):
+    def neuroM_morph_stats_doc(self, neuron_parts_avail, cell_feats_avail,
+                               neurite_feats_avail, neurite_feats_extra, stat_modes):
+        """Prints NeuroM ('fst' module) nomenclature constraints to be followed
+        by the user when specifying observation files"""
 
-        """
-        This accepts data input in the form:
-        ***** (observation) *****
-        {"cell_kind": { "cell_part_1": {'morph_feature_name_11': {'mean value': 'X11_mean units_str', 'std': 'X11_std units_str'},
-                                        'morph_feature_name_12': {'mean value': 'X12_mean units_str', 'std': 'X12_std units_str'},
-                                        ... },
-                        "cell_part_2": {'morph_feature_name_21': {'mean value': 'X21_mean units_str', 'std': 'X21_std units_str'},
-                                        'morph_feature_name_22': {'mean value': 'X22_mean units_str', 'std': 'X22_std units_str'},
-                                        ... },
-                        ... }
-        }
-        ***** (prediction) *****
-        {"cell1_ID": { 'cell_part_1': {'morph_feature_name_11': {'value': 'X11 units_str'},
-                                       'morph_feature_name_12': {'value': 'X12 units_str'},
-                                        ... },
-                       'cell_part_2': {'morph_feature_name_21': {'value': 'X21 units_str'},
-                                       'morph_feature_name_22': {'value': 'X22 units_str'},
-                                        ... },
-                       ... }
-         "cell2_ID": { 'cell_part_1': {'morph_feature_name_11': {'value': 'Y11 units_str'},
-                                       'morph_feature_name_12': {'value': 'Y12 units_str'},
-                                        ... },
-                       'cell_part_2': {'morph_feature_name_21': {'value': 'Y21 units_str'},
-                                       'morph_feature_name_22': {'value': 'Y22 units_str'},
-                                        ... },
-                       ... }
-        ... }
-
-        It splits the values of mean, std and value to numeric quantities
-        and their units (via quantities package)
-        """
-        dim_non = ['order', 'number', 'asymmetry', 'rate']
-        dim_um = ['radii', 'length', 'distance', 'extent']
-        dim_umSq = ['area']
-        dim_umCb = ['volume']
-        dim_deg = ['angle']
-        for dict1 in data.values():  # Dict. with cell's part-features dictionary pairs for each cell
-            for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part:
-                                            # neuron, apical_dendrite, basal_dendrite or axon
-                for dict3 in dict2.values():  # Dict. with 'value', 'mean' and 'std' values
-                    for key, val in dict3.items():
-                        quantity_parts = val.split()
-                        number, units_str = float(quantity_parts[0]), " ".join(quantity_parts[1:])
-                        try:
-                            if any(sub_str in key for sub_str in dim_um):
-                                assert (units_str == quantities.um | units_str == quantities.mm), \
-                                    sciunit.Error("Values not in appropriate format. Required units: mm or um")
-                            elif any(sub_str in key for sub_str in dim_non):
-                                assert (units_str == quantities.dimensionless), \
-                                    sciunit.Error("Values not in appropriate format. Required units: ",
-                                                  quantities.dimensionless)
-                        finally:
-                            dict3[key] = quantities.Quantity(number, units_str)
-
-        return data
-
-    # ----------------------------------------------------------------------
-
-    def validate_observation(self, observation):
-
-        # Checking format of the observation data
-        for dict1 in observation.values():  # Dict. with cell's part-features dictionary pairs for each cell
-            for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part:
-                                            # neuron, apical_dendrite, basal_dendrite or axon
-                for dict3 in dict2.values():  # Dict. with 'value' or 'mean' and 'std' values
-                    for val in dict3.values():
-                        assert type(val) is quantities.Quantity, \
-                            sciunit.Error(("Observation must be of the form "
-                                           "{'mean': 'XX units_str','std': 'YY units_str'}"))
+        print 'Cell parts available:\n', sorted(neuron_parts_avail), '\n'
+        print 'Cell features available:\n', sorted(cell_feats_avail), '\n'
+        print 'Neurite features available:\n', sorted(neurite_feats_avail), '\n'
+        print 'A summary statistics must be indicated for each feature, with the ' \
+              'exception of those contained in the set ', neurite_feats_extra, \
+            '. Statistics modes available: ', stat_modes, '\n'
+        # How to specify feature_name = mode + feature
+        print "To that end, a prefix formed with the stats. mode intended, followed by '_', " \
+              "should be added to the feature name. For instance: 'total_number_of_neurites' \n"
+        print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n\n"
 
     # ----------------------------------------------------------------------
 
     def generate_prediction(self, model, verbose=False):
         """Implementation of sciunit.Test.generate_prediction"""
+
+        # Creates a configuration file for morph_stats, following the structure of a raw observation data
+        self.morph_stats_config_path, self.neuroM_extra_config_path = \
+            self.set_morph_stats_config_file(observation=observation, model=model)
 
         # Creating the prediction file with morph_stats
         self.morp_path = model.morph_path
