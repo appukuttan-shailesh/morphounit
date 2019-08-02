@@ -26,10 +26,15 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         if not base_directory:
             base_directory = "."
         self.path_test_output = base_directory
+        # create output directory
+        if not os.path.exists(self.path_test_output):
+            os.makedirs(self.path_test_output)
 
         # Checks raw observation data compliance with NeuroM's nomenclature
         self.check_observation(observation)
         self.raw_observation = observation
+
+        json.dumps(observation, sort_keys=True, indent=3)
 
         self.figures = []
         observation = self.format_data(observation)
@@ -277,6 +282,8 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         self.morp_path = model.morph_path
 
         mod_prediction_path = model.set_morph_feature_info(morph_stats_config_path=morph_stats_config_path)
+        os.remove(morph_stats_config_path)
+
         # Deleting some neurite's morphometrics added by morph_stats, but not present in the observation file
         with open(mod_prediction_path, 'r') as fp:
             mod_prediction_temp = json.load(fp)
@@ -291,6 +298,8 @@ class NeuroM_MorphStats_Test(sciunit.Test):
             json.dump(mod_prediction, fp, sort_keys=True, indent=3)
 
         model.complete_morph_feature_info(neuroM_extra_config_path=neuroM_extra_config_path)
+        os.remove(neuroM_extra_config_path)
+
         model.pre_formatting()
 
         with open(mod_prediction_path, 'r') as fp:
@@ -343,11 +352,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         self.score.description = "A mean |Z-score|"
 
         # ---------------------- Saving relevant results ----------------------
-        # create output directory
-        # Currently done inside the model Class
-        if not os.path.exists(self.path_test_output):
-            os.makedirs(self.path_test_output)
-
         # Saving json file with model predictions
         json_pred_file = mph_plots.jsonFile_MorphStats(testObj=self, dictData=self.prediction_txt,
                                                        prefix_name="prediction_summary_")
