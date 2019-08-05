@@ -12,7 +12,7 @@ class TxtTable:
 
     def __init__(self, testObj):
         self.testObj = testObj
-        self.filename = "score_summary"
+        self.filename = "scores_txt_summary"
 
     def create(self, mid_keys = []):
         filepath = self.testObj.path_test_output + self.filename + '.txt'
@@ -54,4 +54,5 @@ class TxtTable:
         dataFile.write("Final Score: %s\n" % self.testObj.score)
         dataFile.write("==============================================================================\n")
         dataFile.close()
-        return filepath
+	return filepath
+

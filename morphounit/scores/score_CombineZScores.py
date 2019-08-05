@@ -43,3 +43,4 @@ class CombineZScores(sciunit.Score):
     def __str__(self):
         #return 'Combined Z-score = %.2f' % self.score
         return '%.2f' % self.score
+
