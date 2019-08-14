@@ -4,6 +4,7 @@
 from tabulate import tabulate
 import quantities
 import os
+import json
 
 
 class TxtTable_MorphStats:
@@ -14,7 +15,7 @@ class TxtTable_MorphStats:
     def __init__(self, testObj):
 
         self.testObj = testObj
-        self.prefix_filename_cell = "score_summary_"
+        self.prefix_filename_cell = "results_summary_"
         self.filepath_list = list()
 
     def quant_to_str(self, value_quant):
@@ -52,7 +53,7 @@ class TxtTable_MorphStats:
         score_label = "A mean |Z-score|"
 
         cell_t = self.testObj.observation.keys()[0]  # Cell type
-        for key_0 in self.testObj.prediction:  # cell ID keys
+        for key_0 in sorted(self.testObj.score_feat_dict):  # cell ID keys
 
             tab_title = key_0
             filepath_summary_cell = \
@@ -60,9 +61,12 @@ class TxtTable_MorphStats:
 
             row_list = []
 
-            for key_1 in self.testObj.prediction[key_0]:  # cell's part keys: soma, axon,
-                                                        # apical_dendrite or basal_dendrite
-                for key_2 in self.testObj.prediction[key_0][key_1]:  # features name keys
+            for key_1 in sorted(self.testObj.score_feat_dict[key_0]):  # cell's part keys: soma, axon,
+                                                                        # apical_dendrite or basal_dendrite
+                if 'score' in key_1:  # Excluding the overall cell's score
+                    continue
+
+                for key_2 in sorted(self.testObj.score_feat_dict[key_0][key_1]):  # features name keys
 
                     o_mean = self.quant_to_str(self.testObj.observation[cell_t][key_1][key_2]["mean"])
                     o_std = self.quant_to_str(self.testObj.observation[cell_t][key_1][key_2]["std"])

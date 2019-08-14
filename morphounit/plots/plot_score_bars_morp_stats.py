@@ -35,11 +35,14 @@ class ScoresBars_MorphStats:
         axis_obj = sns.barplot(x=scores_floats_df[score_label], y=scores_floats_df.index, palette=np.array(pal)[rank])
 
         plt.subplots_adjust(left=0.3)
-        axis_obj.set(xlabel=xlabel, ylabel=ylabel, title=title)
+	axis_obj.set(xlabel=xlabel, ylabel=ylabel)
+	# axis_obj.set_ylabel(ylabel, fontsize=y_fontsize)
+	# axis_obj.set_xlabel(xlabel, fontsize=x_fontsize)
         axis_obj.set_yticklabels(axis_obj.get_yticklabels(), fontsize=y_fontsize)
         # axis_obj.set_xticklabels(axis_obj.get_xticklabels(), fontsize=x_fontsize)
+	axis_obj.axes.set_title(title, fontsize=7)
 
-        sns.despine()
+        # sns.despine()
 
         plt.savefig(filepath, dpi=600, )
         self.filepath_list.append(filepath)
@@ -84,6 +87,6 @@ class ScoresBars_MorphStats:
 
             plt.close('all')
             self.score_barplot(filepath=filepath_score_feat, scores_floats=scores_feat_floats, score_label=score_label,
-                               xlabel=score_label, x_fontsize=6, ylabel='morpho-features', y_fontsize=6, title=plt_title)
+                               xlabel=score_label, x_fontsize=7, ylabel='morpho-features', y_fontsize=6, title=plt_title)
 
         return self.filepath_list
