@@ -35,12 +35,12 @@ class ScoresBars_MorphStats:
         axis_obj = sns.barplot(x=scores_floats_df[score_label], y=scores_floats_df.index, palette=np.array(pal)[rank])
 
         plt.subplots_adjust(left=0.3)
-	axis_obj.set(xlabel=xlabel, ylabel=ylabel)
-	# axis_obj.set_ylabel(ylabel, fontsize=y_fontsize)
-	# axis_obj.set_xlabel(xlabel, fontsize=x_fontsize)
+	    axis_obj.set(xlabel=xlabel, ylabel=ylabel)
+	    # axis_obj.set_ylabel(ylabel, fontsize=y_fontsize)
+	    # axis_obj.set_xlabel(xlabel, fontsize=x_fontsize)
         axis_obj.set_yticklabels(axis_obj.get_yticklabels(), fontsize=y_fontsize)
         # axis_obj.set_xticklabels(axis_obj.get_xticklabels(), fontsize=x_fontsize)
-	axis_obj.axes.set_title(title, fontsize=7)
+	    axis_obj.axes.set_title(title, fontsize=7)
 
         # sns.despine()
 
