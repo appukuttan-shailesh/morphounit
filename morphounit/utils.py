@@ -68,7 +68,7 @@ class NeuroM_MorphStats(sciunit.Model):
             os.system('morph_stats -C {} -o {} {}'.format(morph_stats_config_path,
                                                           self.output_pred_file, self.morph_path))
         except IOError:
-            print "Please specify the paths to the morphology directory and configuration file for morph_stats"
+            print("Please specify the paths to the morphology directory and configuration file for morph_stats")
 
         with open(self.output_pred_file, 'r') as fp:
             mod_prediction = json.load(fp)
@@ -99,7 +99,7 @@ class NeuroM_MorphStats(sciunit.Model):
         # (instead of taking the observation file as reference, to keep independence between Model and Test classes)
         with open(morph_stats_config_path, 'r') as fp:
             morph_stats_config_dict = json.load(fp)
-        # print 'morph_stats_config_dict = ', json.dumps(morph_stats_config_dict, sort_keys=True, indent=3)
+        # print('morph_stats_config_dict = ', json.dumps(morph_stats_config_dict, sort_keys=True, indent=3))
 
         neurite_feats_plural = list()
         neuron_feats_plural = list()
@@ -130,7 +130,7 @@ class NeuroM_MorphStats(sciunit.Model):
                             new_key = feat_name_stat_mode + 's'
 
                     if new_key:
-                        # print 'Changing %s -> %s = \n' % (feat_name_stat_mode, new_key)
+                        # print('Changing %s -> %s = \n' % (feat_name_stat_mode, new_key))
                         del dict1[feat_name_stat_mode]
                         dict1.update({new_key: value})
 

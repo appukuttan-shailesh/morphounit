@@ -106,7 +106,7 @@ class NeuroM_MorphStats_pop_Test(sciunit.Test):
         mapping = lambda section: section.points
         for cell_ID, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs for each cell
 
-            print 'Analysing cell ---> ', cell_ID+'.swc', '\n'
+            print('Analysing cell ---> ', cell_ID+'.swc', '\n')
             # Adding more neurite's features:
             # field diameter, bounding-box -X,Y,Z- extents and -largest,shortest- principal extents
             if os.path.isdir(self.morp_path):
@@ -151,14 +151,14 @@ class NeuroM_MorphStats_pop_Test(sciunit.Test):
 
         """
         with open(model.output_file, 'w') as fp:
-            print json.dump(mod_prediction, fp, sort_keys=True, indent=3)
-        print json.dumps(pop_prediction, sort_keys=True, indent=3)
+            print(json.dump(mod_prediction, fp, sort_keys=True, indent=3))
+        print(json.dumps(pop_prediction, sort_keys=True, indent=3))
         """
         pop_prediction = dict(FSI_mean=population_features)
         pop_prediction_raw = dict(FSI_pop=population_features_raw)
 
-        # print 'pop_prediction = ', json.dumps(pop_prediction, sort_keys=True, indent=3), '\n\n'
-        # print 'pop_prediction_raw = ', json.dumps(pop_prediction_raw, sort_keys=True, indent=3), '\n'
+        # print('pop_prediction = ', json.dumps(pop_prediction, sort_keys=True, indent=3), '\n\n')
+        # print('pop_prediction_raw = ', json.dumps(pop_prediction_raw, sort_keys=True, indent=3), '\n')
 
         # Adding the right units and converting feature values to strings
         dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']

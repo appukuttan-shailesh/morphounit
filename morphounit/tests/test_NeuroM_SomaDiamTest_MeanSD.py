@@ -84,8 +84,8 @@ class NeuroM_SomaDiamTest_MeanSD(sciunit.Test):
 
     def compute_score(self, observation, prediction, verbose=False):
         """Implementation of sciunit.Test.score_prediction."""
-        print "observation = ", observation
-        print "prediction = ", prediction
+        print("observation = {}".format(observation))
+        print("prediction = {}".format(prediction))
         self.score = sciunit.scores.ZScore.compute(observation["diameter"], prediction["diameter"])
         self.score.description = "A simple Z-score"
 

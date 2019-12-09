@@ -128,7 +128,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                                     stat_modes)
         """
 
-        # print "Checking observation file compliance with NeuroM's ('fst' module) nomenclature..."
+        # print("Checking observation file compliance with NeuroM's ('fst' module) nomenclature...")
         for dict1 in observation.values():  # Dict. with cell's part-features dictionary pairs for each cell
             for key2, dict2 in dict1.items():  # Dict. with feature name-value pairs for each cell part:
                                                 #  neuron, apical_dendrite, basal_dendrite or axon
@@ -156,7 +156,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                         assert (key3 in neurite_feats_extra), \
                             "{} is not permitted for neurites. Please, use one in the following list:\n {}" \
                             .format(key3, sorted(neurite_feats_avail))
-        # print 'OK \n'
+        # print('OK \n')
 
         return None
 
@@ -218,8 +218,8 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         morph_stats_config_dict.update({'neurite_type': neurite_type_list,
                                         'neurite': feat_name_stat_mode_neurite_dict,
                                         'neuron': feat_name_stat_mode_cell_dict})
-        # print 'Configuration file for morph_stats was completed. \n', \
-        #  json.dumps(morph_stats_config_dict, sort_keys=True, indent=3)
+        # print('Configuration file for morph_stats was completed. \n', \
+        #  json.dumps(morph_stats_config_dict, sort_keys=True, indent=3))
 
         obs_dir = self.path_test_output
         # obs_dir = os.path.dirname(observation_path)
@@ -243,7 +243,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         if extra_file_exists:
             os.remove(neuroM_extra_config_path)
         if neurite_feats_extra_dict:
-            # print 'The following morphometrics will be extracted separately and added to the model prediction: \n', \
+            # print('The following morphometrics will be extracted separately and added to the model prediction: \n', \)
             json.dumps(neurite_feats_extra_dict, sort_keys=True, indent=3)
             # Saving NeuroM's configuration extra-file in JSON format
             with open(neuroM_extra_config_path, 'w') as fp:
@@ -258,16 +258,16 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         """Prints NeuroM ('fst' module) nomenclature constraints to be followed
         by the user when specifying observation files"""
 
-        print 'Cell parts available:\n', sorted(neuron_parts_avail), '\n'
-        print 'Cell features available:\n', sorted(cell_feats_avail), '\n'
-        print 'Neurite features available:\n', sorted(neurite_feats_avail), '\n'
-        print 'A summary statistics must be indicated for each feature, with the ' \
+        print('Cell parts available:\n', sorted(neuron_parts_avail), '\n')
+        print('Cell features available:\n', sorted(cell_feats_avail), '\n')
+        print('Neurite features available:\n', sorted(neurite_feats_avail), '\n')
+        print('A summary statistics must be indicated for each feature, with the ' \
               'exception of those contained in the set ', neurite_feats_extra, \
-            '. Statistics modes available: ', stat_modes, '\n'
+              '. Statistics modes available: ', stat_modes, '\n')
         # How to specify feature_name = mode + feature
-        print "To that end, a prefix formed with the stats. mode intended, followed by '_', " \
-              "should be added to the feature name. For instance: 'total_number_of_neurites' \n"
-        print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n\n"
+        print("To that end, a prefix formed with the stats. mode intended, followed by '_', " \
+              "should be added to the feature name. For instance: 'total_number_of_neurites' \n")
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n\n")
 
     # ----------------------------------------------------------------------
 
@@ -305,7 +305,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         with open(mod_prediction_path, 'r') as fp:
             mod_prediction = json.load(fp)
         os.remove(mod_prediction_path)
-        # print 'prediction file: \n', json.dumps(mod_prediction, sort_keys=True, indent=3)
+        # print('prediction file: \n', json.dumps(mod_prediction, sort_keys=True, indent=3))
         self.prediction_txt = copy.deepcopy(mod_prediction)
 
         prediction = self.format_data(mod_prediction)
