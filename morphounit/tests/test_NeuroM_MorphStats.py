@@ -113,7 +113,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         cell_feats_avail = nm.fst.NEURONFEATURES.keys()
 
         # Neurite features available
-        neurite_feats_avail = nm.fst.NEURITEFEATURES.keys()
+        neurite_feats_avail = list(nm.fst.NEURITEFEATURES.keys())
         neurite_feats_extra = ['neurite_field_diameter', 'neurite_largest_extent', 'neurite_shortest_extent',
                                'neurite_X_extent', 'neurite_Y_extent', 'neurite_Z_extent']
         neurite_feats_avail.extend(neurite_feats_extra)
