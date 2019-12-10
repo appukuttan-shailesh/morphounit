@@ -12,6 +12,7 @@ from datetime import datetime
 import matplotlib.backends.backend_pdf
 from neurom.apps.cut_plane_detection import find_cut_plane
 from neurom import load_neuron
+import numpy
 
 #==============================================================================
 
