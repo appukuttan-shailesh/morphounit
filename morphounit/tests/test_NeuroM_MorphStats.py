@@ -43,7 +43,8 @@ class NeuroM_MorphStats_Test(sciunit.Test):
     # ----------------------------------------------------------------------
 
     def format_data(self, data):
-
+        print("format_data")
+        print(data)
         """
         This accepts data input in the form:
         ***** (observation) *****
