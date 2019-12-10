@@ -87,7 +87,7 @@ class NeuroM_MorphStats(sciunit.Model):
             # Regrouping all neuron features-values pairs into a unique key ('neuron'),
             # as in NeuroM's nomenclature, e.g. total_soma_radii, mean_trunk_section_lengths
             neuron_feat_name_stat_mode = dict()
-            for key, val in dict0.items():
+            for key, val in list(dict0.items()):
                 if not any(sub_str in key for sub_str in ['dendrite', 'axon']):
                     neuron_feat_name_stat_mode.update({key: val})
                     del dict0[key]
@@ -140,6 +140,9 @@ class NeuroM_MorphStats(sciunit.Model):
         with open(self.output_pred_file, 'w') as fp:
             json.dump(mod_prediction, fp, sort_keys=True, indent=3)
 
+
+        print("set_morph_feature_info")
+        print (mod_prediction)
         return self.output_pred_file
 
     # ----------------------------------------------------------------------
