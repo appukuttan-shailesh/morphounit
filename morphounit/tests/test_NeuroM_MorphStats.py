@@ -232,6 +232,9 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         with open(morph_stats_config_path, 'w') as fp:
             json.dump(morph_stats_config_dict, fp, sort_keys=True, indent=3)
 
+        print("set_morph_stats_config_file")
+        print(morph_stats_config_dict)
+
         # Morphometrics of non-morph_stats features to be computed
         for key, value in neurite_feats_extra_dict.items():
             if not value:
@@ -250,6 +253,8 @@ class NeuroM_MorphStats_Test(sciunit.Test):
             with open(neuroM_extra_config_path, 'w') as fp:
                 json.dump(neurite_feats_extra_dict, fp, sort_keys=True, indent=3)
 
+        print("set_morph_stats_config_file")
+        print(neurite_feats_extra_dict)
         return morph_stats_config_path, neuroM_extra_config_path
 
     # ----------------------------------------------------------------------

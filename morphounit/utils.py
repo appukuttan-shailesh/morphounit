@@ -72,8 +72,10 @@ class NeuroM_MorphStats(sciunit.Model):
 
         with open(self.output_pred_file, 'r') as fp:
             mod_prediction = json.load(fp)
+        print("set_morph_feature_info")
+        print (mod_prediction)
 
-        for key0, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs for each cell
+        for key0, dict0 in list(mod_prediction.items()):  # Dict. with cell's morph_path-features dict. pairs for each cell
             # Correcting cell's ID, given by some NeuroM versions:
             # omitting enclosing directory's name and file's extension
             cell_ID = (key0.split("/")[-1])
@@ -85,7 +87,7 @@ class NeuroM_MorphStats(sciunit.Model):
             # Regrouping all neuron features-values pairs into a unique key ('neuron'),
             # as in NeuroM's nomenclature, e.g. total_soma_radii, mean_trunk_section_lengths
             neuron_feat_name_stat_mode = dict()
-            for key, val in list(dict0.items()):
+            for key, val in dict0.items():
                 if not any(sub_str in key for sub_str in ['dendrite', 'axon']):
                     neuron_feat_name_stat_mode.update({key: val})
                     del dict0[key]
@@ -104,10 +106,10 @@ class NeuroM_MorphStats(sciunit.Model):
         neurite_feats_plural = list()
         neuron_feats_plural = list()
         for key0, dict0 in morph_stats_config_dict.items():
-                    if key0 == 'neurite':
-                        neurite_feats_plural = [key1 for key1 in dict0.keys() if key1[-1] == 's']
-                    elif key0 == 'neuron':
-                        neuron_feats_plural = [key1 for key1 in dict0.keys() if key1[-1] == 's']
+            if key0 == 'neurite':
+                neurite_feats_plural = [key1 for key1 in dict0.keys() if key1[-1] == 's']
+            elif key0 == 'neuron':
+                neuron_feats_plural = [key1 for key1 in dict0.keys() if key1[-1] == 's']
 
         for cell_ID, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs
                                                         # for each cell
