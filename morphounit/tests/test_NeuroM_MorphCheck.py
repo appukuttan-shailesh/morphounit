@@ -47,7 +47,7 @@ class NeuroM_MorphoCheck(sciunit.Test):
 
         # note: observation here is either the contents of the config file or a local path
         # if local path load contents
-        if not isinstance(self.observation, dict):        
+        if not isinstance(self.observation, dict):
             with open(self.observation) as f:
                 self.observation = json.load(f)
         # save morph_check config as local file
@@ -73,8 +73,12 @@ class NeuroM_MorphoCheck(sciunit.Test):
         cutplane_output_file = os.path.join(self.path_test_output, "cut_plane_output.json")
         cut_plane_output_json.pop("figures")
         cut_plane_output_json["cut_leaves"] = cut_plane_output_json["cut_leaves"].tolist()
+
+        def convert(o):
+            if isinstance(o, numpy.int64): return int(o)
+            raise TypeError
         with open(cutplane_output_file, "w") as outfile:
-            json.dump(cut_plane_output_json, outfile, indent=4)
+            json.dump(cut_plane_output_json, outfile, indent=4, default=convert)
 
         self.figures.append(morhpcheck_output_file)
         self.figures.append(cutplane_output_file)
