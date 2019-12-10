@@ -72,8 +72,6 @@ class NeuroM_MorphStats(sciunit.Model):
 
         with open(self.output_pred_file, 'r') as fp:
             mod_prediction = json.load(fp)
-        print("set_morph_feature_info")
-        print (mod_prediction)
 
         for key0, dict0 in list(mod_prediction.items()):  # Dict. with cell's morph_path-features dict. pairs for each cell
             # Correcting cell's ID, given by some NeuroM versions:
@@ -140,9 +138,6 @@ class NeuroM_MorphStats(sciunit.Model):
         with open(self.output_pred_file, 'w') as fp:
             json.dump(mod_prediction, fp, sort_keys=True, indent=3)
 
-
-        print("set_morph_feature_info")
-        print (mod_prediction)
         return self.output_pred_file
 
     # ----------------------------------------------------------------------
