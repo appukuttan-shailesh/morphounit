@@ -67,7 +67,7 @@ class NeuroM_MorphoCheck(sciunit.Test):
             cut_plane_figure_list.append(cut_plane_output_json["figures"][key][0])
         cutplane_output_pdf = os.path.join(self.path_test_output, "cut_plane_figures.pdf")
         cut_plane_pdf = matplotlib.backends.backend_pdf.PdfPages(cutplane_output_pdf)
-        for fig in xrange(1, len(cut_plane_figure_list)+1):
+        for fig in range(1, len(cut_plane_figure_list)+1):
             cut_plane_pdf.savefig(fig)
         cut_plane_pdf.close()
         cutplane_output_file = os.path.join(self.path_test_output, "cut_plane_output.json")
