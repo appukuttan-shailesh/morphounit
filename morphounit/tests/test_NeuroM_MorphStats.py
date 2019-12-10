@@ -288,7 +288,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         with open(mod_prediction_path, 'r') as fp:
             mod_prediction_temp = json.load(fp)
         mod_prediction = copy.deepcopy(mod_prediction_temp)
-        cell_t = self.raw_observation.keys()[0]  # Cell type
+        cell_t = list(self.raw_observation.keys())[0]  # Cell type
         for cell_ID, cell_dict in mod_prediction_temp.items():
             for cell_part, cell_part_dict in cell_dict.items():
                 for feat_name_stat_mode in cell_part_dict:
@@ -320,7 +320,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         self.prediction = prediction
 
         # Computing the scores
-        cell_t = observation.keys()[0]  # Cell type
+        cell_t = list(observation.keys())[0]  # Cell type
 
         score_cell_dict = dict.fromkeys([key0 for key0 in prediction.keys()], [])
         obs_features = copy.deepcopy(observation.values())[0]

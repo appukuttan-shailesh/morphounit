@@ -191,7 +191,7 @@ class NeuroM_MorphStats_pop_Test(sciunit.Test):
         self.prediction = prediction
 
         # Computing the scores
-        cell_t = observation.keys()[0]  # Cell type
+        cell_t = list(observation.keys())[0]  # Cell type
 
         score_cell_dict = dict.fromkeys([key0 for key0 in prediction.keys()], [])
         obs_features = copy.deepcopy(observation.values())[0]  # only features registered in observation data are tested
