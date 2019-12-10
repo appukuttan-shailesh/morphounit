@@ -85,7 +85,7 @@ class NeuroM_MorphStats(sciunit.Model):
             # Regrouping all neuron features-values pairs into a unique key ('neuron'),
             # as in NeuroM's nomenclature, e.g. total_soma_radii, mean_trunk_section_lengths
             neuron_feat_name_stat_mode = dict()
-            for key, val in dict0.items():
+            for key, val in list(dict0.items()):
                 if not any(sub_str in key for sub_str in ['dendrite', 'axon']):
                     neuron_feat_name_stat_mode.update({key: val})
                     del dict0[key]
