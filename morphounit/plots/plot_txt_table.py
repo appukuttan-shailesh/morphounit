@@ -54,5 +54,4 @@ class TxtTable:
         dataFile.write("Final Score: %s\n" % self.testObj.score)
         dataFile.write("==============================================================================\n")
         dataFile.close()
-	return filepath
-
+        return filepath

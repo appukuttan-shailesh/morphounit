@@ -194,59 +194,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
     # ----------------------------------------------------------------------
 
-    def generate_prediction(self, model, verbose=False):
-        """Implementation of sciunit.Test.generate_prediction"""
-
-        # Creates a model prediction file following some NeuroM configuration
-        # files for NeuroM, but additional formatting is needed
-        self.raw_model_prediction(model)
-
-        model.pre_formatting()
-        with open(model.output_pred_file, 'r') as fp:
-            mod_prediction = json.load(fp)
-        os.remove(model.output_pred_file)
-        # print 'prediction file: \n', json.dumps(mod_prediction, sort_keys=True, indent=3)
-        self.prediction_txt = copy.deepcopy(mod_prediction)
-
-        prediction = self.format_data(mod_prediction)
-        return prediction
-
-    # ----------------------------------------------------------------------
-
-    def raw_model_prediction(self, model):
-        """ Creates a model prediction file containing the morphometrics \
-        specified in configuration files for NeuroM """
-
-        # Creates a configuration file for morph_stats, following the structure of a raw observation data
-        morph_stats_config_path, neuroM_extra_config_path = self.set_morph_stats_config_file()
-
-        # Creating the prediction file with morph_stats
-        self.morp_path = model.morph_path
-
-        model.set_morph_feature_info(morph_stats_config_path=morph_stats_config_path)
-        os.remove(morph_stats_config_path)
-
-        # Deleting some neurite's morphometrics added by morph_stats, but not present in the observation file
-        with open(model.output_pred_file, 'r') as fp:
-         mod_prediction_temp = json.load(fp)
-        mod_prediction = copy.deepcopy(mod_prediction_temp)
-        cell_t = self.raw_observation.keys()[0]  # Cell type
-        for cell_ID, cell_dict in mod_prediction_temp.items():
-            for cell_part, cell_part_dict in cell_dict.items():
-                for feat_name_stat_mode in cell_part_dict:
-                    if cell_part != 'neuron' and feat_name_stat_mode not in self.raw_observation[cell_t][cell_part]:
-                        del mod_prediction[cell_ID][cell_part][feat_name_stat_mode]
-
-        with open(model.output_pred_file, 'w') as fp:
-            json.dump(mod_prediction, fp, sort_keys=True, indent=3)
-
-        model.complete_morph_feature_info(neuroM_extra_config_path=neuroM_extra_config_path)
-        os.remove(neuroM_extra_config_path)
-
-        return
-
-    # ----------------------------------------------------------------------
-
     def set_morph_stats_config_file(self):
         """ Creates two configuration files, following the structure of a
         raw observation JSON file (previously to SciUnit formatting):
@@ -326,6 +273,55 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
     # ----------------------------------------------------------------------
 
+    def raw_model_prediction(self, model):
+        """ Creates a model prediction file containing the morphometrics \
+        specified in configuration files for NeuroM """
+
+        # Creates a configuration file for morph_stats, following the structure of a raw observation data
+        morph_stats_config_path, neuroM_extra_config_path = self.set_morph_stats_config_file()
+
+        # Creating the prediction file with morph_stats
+        self.morp_path = model.morph_path
+
+        mod_prediction_temp = model.set_morph_feature_info(morph_stats_config_path=morph_stats_config_path)
+        os.remove(morph_stats_config_path)
+
+        # Deleting some neurite's morphometrics added by morph_stats, but not present in the observation file
+        mod_prediction = copy.deepcopy(mod_prediction_temp)
+        cell_t = self.raw_observation.keys()[0]  # Cell type
+        for cell_ID, cell_dict in mod_prediction_temp.items():
+            for cell_part, cell_part_dict in cell_dict.items():
+                for feat_name_stat_mode in cell_part_dict:
+                    if cell_part != 'neuron' and feat_name_stat_mode not in self.raw_observation[cell_t][cell_part]:
+                        del mod_prediction[cell_ID][cell_part][feat_name_stat_mode]
+
+        with open(model.output_pred_file, 'w') as fp:
+            json.dump(mod_prediction, fp, sort_keys=True, indent=3)
+
+        mod_prediction_all = model.complete_morph_feature_info(neuroM_extra_config_path=neuroM_extra_config_path)
+        os.remove(neuroM_extra_config_path)
+
+        os.remove(model.output_pred_file)
+
+        return mod_prediction_all
+
+    # ----------------------------------------------------------------------
+
+    def generate_prediction(self, model, verbose=False):
+        """Implementation of sciunit.Test.generate_prediction"""
+
+        # Creates a model prediction file following some NeuroM configuration
+        # files for NeuroM, but additional formatting is needed
+        mod_prediction_all = self.raw_model_prediction(model)
+
+        mod_prediction = model.pre_formatting(mod_data=mod_prediction_all)
+        self.prediction_txt = copy.deepcopy(mod_prediction)
+
+        prediction = self.format_data(mod_prediction)
+        return prediction
+
+    # ----------------------------------------------------------------------
+
     def compute_score(self, observation, prediction, verbose=True):
         """Implementation of sciunit.Test.score_prediction"""
 
@@ -378,12 +374,12 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         self.figures.extend(json_scores_files)
 
         # Saving table with results
-        txt_table = mph_plots.TxtTable_MorphStats(self)
+        txt_table = mph_plots.TxtTable_MorphStats(testObj=self)
         table_files = txt_table.create()
         self.figures.extend(table_files)
 
         # Saving figure with scores bar-plot
-        barplot_figure = mph_plots.ScoresBars_MorphStats(self)
+        barplot_figure = mph_plots.ScoresBars_MorphStats(testObj=self)
         barplot_files = barplot_figure.create()
         self.figures.extend(barplot_files)
 

@@ -33,20 +33,18 @@ class NeuroM_MorphStats_pop_Test(NeuroM_MorphStats_Test):
 
         # Creates a model prediction file following some NeuroM configuration
         # files for NeuroM, but additional formatting is needed
-        mod_prediction = super(NeuroM_MorphStats_pop_Test, self).raw_model_prediction(model=model)
+        mod_prediction_all = super(NeuroM_MorphStats_pop_Test, self).raw_model_prediction(model=model)
 
         # Collecting raw data from all cells and computing the
         # corresponding the mean morphometrics describing the whole population
-        pop_prediction_raw = model.avg_prediction()
-        self.prediction_raw_txt = copy.deepcopy(pop_prediction_raw)
+        pop_cells_prediction, pop_avg_prediction = model.avg_prediction(mod_data=mod_prediction_all)
 
-        model.pre_formatting()
-        with open(model.output_pred_file, 'r') as fp:
-            mod_prediction = json.load(fp)
-        os.remove(model.output_pred_file)
-        self.prediction_txt = copy.deepcopy(mod_prediction)
-
+        mod_prediction = model.pre_formatting(mod_data=pop_avg_prediction)
+        self.prediction_pop_dict = copy.deepcopy(mod_prediction)
         prediction = self.format_data(mod_prediction)
+
+        self.prediction_cells_dict = copy.deepcopy(pop_cells_prediction)
+
         return prediction
 
     # ----------------------------------------------------------------------
@@ -94,32 +92,39 @@ class NeuroM_MorphStats_pop_Test(NeuroM_MorphStats_Test):
         if not os.path.exists(self.path_test_output):
             os.makedirs(self.path_test_output)
         """
-        # Saving json file with model predictions
-        json_pred_file = mph_plots.jsonFile_MorphStats(testObj=self, dictData=self.prediction_txt,
+        # Saving json file with all cells predictions
+        json_pred_file = mph_plots.jsonFile_MorphStats(testObj=self, dictData=self.prediction_cells_dict,
                                                        prefix_name="prediction_summary_")
         json_pred_files = json_pred_file.create()
         self.figures.extend(json_pred_files)
 
-        json_pred_file = mph_plots.jsonFile_MorphStats(testObj=self, dictData=self.prediction_raw_txt,
+        # Saving json file with population's prediction
+        json_pred_file = mph_plots.jsonFile_MorphStats(testObj=self, dictData=self.prediction_pop_dict,
                                                        prefix_name="prediction_summary_")
         json_pred_files = json_pred_file.create()
         self.figures.extend(json_pred_files)
 
-        # Saving table with results
-        txt_table = mph_plots.TxtTable_MorphStats(self)
-        table_files = txt_table.create()
-        self.figures.extend(table_files)
-
-        # Saving json file with scores
+        # Saving json file with population's scores
         json_scores_file = mph_plots.jsonFile_MorphStats(testObj=self, dictData=self.score_feat_dict,
                                                          prefix_name="scores_summary_")
         json_scores_files = json_scores_file.create()
         self.figures.extend(json_scores_files)
 
-        # Saving figure with scores bar-plot
-        barplot_figure = mph_plots.ScoresBars_MorphStats(self)
+        # Saving table with population's results
+        txt_table = mph_plots.TxtTable_MorphStats(testObj=self)
+        table_files = txt_table.create()
+        self.figures.extend(table_files)
+
+        # Saving figure with with population's in the form of bar-plot
+        barplot_figure = mph_plots.ScoresBars_MorphStats(testObj=self)
         barplot_files = barplot_figure.create()
         self.figures.extend(barplot_files)
+
+        # Saving figures with statistics of the cells' morpho-features,
+        # in the form of correlation, countour and distribution plots
+        statsplot_figure = mph_plots.FeatsPop_MorphStats(testObj=self)
+        statsplot_files = statsplot_figure.create()
+        self.figures.extend(statsplot_files)
 
         return self.score
 

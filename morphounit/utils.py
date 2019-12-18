@@ -137,10 +137,10 @@ class NeuroM_MorphStats(sciunit.Model):
                         dict1.update({new_key: value})
 
         # Saving NeuroM's morph_stats output in a formatted json-file
-        with open(self.output_pred_file, 'w') as fp:
-            json.dump(mod_prediction, fp, sort_keys=True, indent=3)
+        # with open(self.output_pred_file, 'w') as fp:
+        #    json.dump(mod_prediction, fp, sort_keys=True, indent=3)
 
-        return
+        return mod_prediction
 
     # ----------------------------------------------------------------------
 
@@ -221,19 +221,18 @@ class NeuroM_MorphStats(sciunit.Model):
                                 dict1.update({"neurite_field_diameter": neurite_field_diameter})
 
         # Saving NeuroM's output in a formatted json-file
-        with open(self.output_pred_file, 'w') as fp:
-            json.dump(mod_prediction, fp, sort_keys=True, indent=3)
+        # with open(self.output_pred_file, 'w') as fp:
+        #     json.dump(mod_prediction, fp, sort_keys=True, indent=3)
 
-        return
+        return mod_prediction
 
     # ----------------------------------------------------------------------
 
-    def pre_formatting(self):
+    def pre_formatting(self, mod_data=None):
         """Formatting the prediction by adding (non-functional) units (as strings).
         Python package 'quantities' is not used yet, this is implemented in the Test class"""
 
-        with open(self.output_pred_file, 'r') as fp:
-            mod_prediction = json.load(fp)
+        mod_prediction = mod_data
 
         dim_um = ['radii', 'length', 'distance', 'extent']
         for dict1 in mod_prediction.values():  # Set of cell's part-features dictionary pairs for each cell
@@ -248,10 +247,10 @@ class NeuroM_MorphStats(sciunit.Model):
                         dict2[key] = dict(value=str(val))
 
         # Saving NeuroM's output in a formatted json-file
-        with open(self.output_pred_file, 'w') as fp:
-            json.dump(mod_prediction, fp, sort_keys=True, indent=3)
+        # with open(self.output_pred_file, 'w') as fp:
+        #    json.dump(mod_prediction, fp, sort_keys=True, indent=3)
 
-        return
+        return mod_prediction
 
 
 # ----------------------------------------------------------------------
@@ -270,11 +269,10 @@ class NeuroM_MorphStats_pop(NeuroM_MorphStats):
 
     # ----------------------------------------------------------------------
 
-    def avg_prediction(self):
+    def avg_prediction(self, mod_data=None):
         """ Collecting raw data from all cells and computing the corresponding average"""
 
-        with open(self.output_pred_file, 'r') as fp:
-            mod_prediction = json.load(fp)
+        mod_prediction = mod_data
 
         population_features = copy.deepcopy(mod_prediction.values())[0]
         population_features_raw = dict.fromkeys(population_features, {})
@@ -285,14 +283,14 @@ class NeuroM_MorphStats_pop(NeuroM_MorphStats):
             feature_dict.update({feat_name: np.mean(feat_dict_raw[feat_name])
                                  for feat_name in feature_dict.keys()})
 
-        pop_prediction = dict(FSI_mean=population_features)
-        pop_prediction_raw = dict(FSI_pop=population_features_raw)
+        pop_avg_prediction = dict(FSI_mean=population_features)
+        pop_cells_prediction = dict(FSI_pop=population_features_raw)
 
-        # print 'pop_prediction = ', json.dumps(pop_prediction, sort_keys=True, indent=3), '\n\n'
-        # print 'pop_prediction_raw = ', json.dumps(pop_prediction_raw, sort_keys=True, indent=3), '\n'
+        # print 'pop_avg_prediction = ', json.dumps(pop_avg_prediction, sort_keys=True, indent=3), '\n\n'
+        # print 'pop_cells_prediction = ', json.dumps(pop_cells_prediction, sort_keys=True, indent=3), '\n'
 
         # Saving NeuroM's average population output in a formatted json-file
-        with open(self.output_pred_file, 'w') as fp:
-            json.dump(pop_prediction, fp, sort_keys=True, indent=3)
+        # with open(self.output_pred_file, 'w') as fp:
+        #    json.dump(pop_avg_prediction, fp, sort_keys=True, indent=3)
 
-        return pop_prediction_raw
+        return pop_cells_prediction, pop_avg_prediction
