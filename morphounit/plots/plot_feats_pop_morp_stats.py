@@ -68,6 +68,7 @@ class FeatsPop_MorphStats:
         return
 
     def corrfunc(self, x, y, **kws):
+
         r, p = stats.pearsonr(x, y)
         ax = plt.gca()
         ax.annotate("r = {:.2E}, p ={:.2E}".format(r, p),
