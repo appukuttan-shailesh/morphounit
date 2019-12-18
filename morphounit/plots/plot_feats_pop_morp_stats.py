@@ -65,8 +65,6 @@ class FeatsPop_MorphStats:
             plt.savefig(filepath, dpi=600, )
             self.filepath_list.append(filepath)
 
-        return
-
     def corrfunc(self, x, y, **kws):
 
         r, p = stats.pearsonr(x, y)
@@ -92,8 +90,6 @@ class FeatsPop_MorphStats:
             plt.savefig(filepath, dpi=600, )
             self.filepath_list.append(filepath)
 
-        return
-
     def FeaturesPop_PairtGrid_plots(self, dict_pred_CellPart_df=None):
 
         feats_exc = ['total_number_of_neurites', 'max_section_branch_order', 'CellPart']
@@ -115,8 +111,6 @@ class FeatsPop_MorphStats:
             filepath = os.path.join(self.testObj.path_test_output, self.prefix_filename_stats_all + CellPart + '_FSI_pop.pdf')
             plt.savefig(filepath, dpi=600, )
             self.filepath_list.append(filepath)
-
-        return
 
     def create(self):
 

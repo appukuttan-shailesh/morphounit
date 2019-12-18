@@ -98,8 +98,6 @@ class NeuroM_MorphStats_Test(sciunit.Test):
                             .format(key3, sorted(neurite_feats_avail))
         # print 'OK \n'
 
-        return None
-
     # ----------------------------------------------------------------------
 
     def neuroM_morph_stats_doc(self, neuron_parts_avail, cell_feats_avail,
