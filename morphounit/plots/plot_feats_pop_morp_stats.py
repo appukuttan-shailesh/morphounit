@@ -3,7 +3,7 @@ import os
 from scipy import stats
 import pandas as pd
 import seaborn as sns
-
+import numpy as np
 import matplotlib
 matplotlib.use('Agg')  # Force matplotlib to not use any Xwindows backend.
 from matplotlib import pyplot as plt
@@ -36,20 +36,48 @@ class FeatsPop_MorphStats:
 
         return dict_pred_CellPart_df
 
-    def feats_to_plot(self, all_feats=[], feats_exc=[]):
-        for feat_name in feats_exc:
-            try:
-                all_feats.remove(feat_name)
-            except:
-                pass
-
-        return all_feats
-
     def corrfunc(self, x, y, **kws):
         r, p = stats.pearsonr(x, y)
         ax = plt.gca()
         ax.annotate("r = {:.2E}\n(p ={:.2E})".format(r, p),
                     xy=(.1, .9), xycoords=ax.transAxes)
+
+    def df_drop_features(self, df=None, threshold_corr=0.95, threshold_var=0.05):
+        '''Drops one in any pair of highly correlated features of a DataFrame,
+        as the calculation of some quantities may not be posible. Besides,
+        columns with no variance are excluded. For instance,
+        joint kernel distributions estimates (kde) for two highly correlated
+        features may not be computed. The same holds for features with low variability.
+
+        The cutoffs for correlation (or variance) to be considered as too high (or too low)
+        are given by 'threshold_corr' ('threshold_var').
+
+        Note: Adapted from
+        https://chrisalbon.com/machine_learning/feature_selection/
+        drop_highly_correlated_features/
+        '''
+
+        feats_to_drop = list()
+        # Compute the correlation DataFrame of the original DataFrame of feature values
+        corr_matrix_df = df.corr().abs()
+        # Build a copy with the elements below the first diagonal as False
+        upper = corr_matrix_df.where(np.triu(np.ones(corr_matrix_df.shape), k=1).astype(np.bool))
+        # Find and collect one feature name in any pair of correlated features
+        features_hcorr = [column for column in df.columns
+                          if any(upper[column] > threshold_corr)]
+        feats_to_drop.extend(features_hcorr)
+
+        # Compute the variance DataSeries of the original DataFrame of feature values
+        var_series = df.var().abs()
+        # Find and collect all features with low variance
+        feats_no_var = [column for column in df.columns
+                        if var_series[column] < threshold_var]
+        feats_to_drop.extend(feats_no_var)
+
+        # Drop all those disposable (maybe superfluous) features found
+        df.drop(df[feats_to_drop], axis=1, inplace=True)
+
+        return df
 
     def FeaturesPop_Linreg_plots(self, dict_pred_CellPart_df=None):
         '''Plots a histogram for values of each morpho-feature, in the diagonal,
@@ -57,11 +85,9 @@ class FeatsPop_MorphStats:
         Linear correlation results are shown below and above the diagonal for
         the same pair of morpho-feattures (i.e., numerical results are symmetric).
         '''
-        feats_exc = ['total_number_of_neurites']
         for CellPart, prediction_raw_df in dict_pred_CellPart_df.items():
+            data = self.df_drop_features(df=prediction_raw_df)
 
-            all_feats = self.feats_to_plot(all_feats=list(prediction_raw_df), feats_exc=feats_exc)
-            data = prediction_raw_df.loc[:, all_feats]
             g = sns.pairplot(data, height=5, aspect=1, diag_kind="kde")
             # g = sns.PairGrid(data, size=5, aspect=1, palette=["red"])
             # g.map(sns.regplot)
@@ -86,13 +112,11 @@ class FeatsPop_MorphStats:
         morpho-feattures are shown above and below the diagonal, respectively.
 
         Note that some morpho-features are excluded from the analysis, when their
-        correlation is equal to 1, as their (kde) countour-plots can not be computed.
+        correlation is high , as their (kde) countour-plots can not be computed.
         '''
-        feats_exc = ['total_number_of_neurites', 'max_section_branch_order', 'total_soma_radii']
         for CellPart, prediction_raw_df in dict_pred_CellPart_df.items():
+            data = self.df_drop_features(df=prediction_raw_df)
 
-            all_feats = self.feats_to_plot(all_feats=list(prediction_raw_df), feats_exc=feats_exc)
-            data = prediction_raw_df.loc[:, all_feats]
             g = sns.pairplot(data, height=5, aspect=1, diag_kind="kde")
             # g = sns.PairGrid(data, size=5, aspect=1, palette=["red"]
             g.map_upper(sns.regplot)
