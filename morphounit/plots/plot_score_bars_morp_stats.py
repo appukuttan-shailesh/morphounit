@@ -83,7 +83,7 @@ class ScoresBars_MorphStats:
                     continue
                 for key_2 in scores_dict[key_0][key_1]:  # features name keys
 
-                    feat_name = "{}.{}".format(key_1, key_2)
+                    feat_name = f"{key_1}.{key_2}"
                     scores_feat_floats[feat_name] = abs(scores_dict[key_0][key_1][key_2]["score"])
 
             plt.close('all')

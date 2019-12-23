@@ -68,15 +68,14 @@ class NeuroM_MorphStats(sciunit.Model):
             os.makedirs(self.morph_stats_output)
 
         try:
-            os.system('morph_stats -C {} -o {} {}'.format(morph_stats_config_path,
-                                                          self.output_pred_file, self.morph_path))
+            os.system(f"morph_stats -C {morph_stats_config_path} -o {self.output_pred_file} {self.morph_path}")
         except IOError:
-            print "Please specify the path to the morphology directory and configuration file for morph_stats"
+            print("Please specify the path to the morphology directory and configuration file for morph_stats")
 
         with open(self.output_pred_file, 'r') as fp:
             mod_prediction = json.load(fp)
 
-        for key0, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs for each cell
+        for key0, dict0 in list(mod_prediction.items()):  # Dict. with cell's morph_path-features dict. pairs for each cell
             # Correcting cell's ID, given by some NeuroM versions:
             # omitting enclosing directory's name
             cell_ID = (key0.split("/")[-1])
@@ -87,7 +86,7 @@ class NeuroM_MorphStats(sciunit.Model):
             # Regrouping all neuron features-values pairs into a unique key ('neuron'),
             # as in NeuroM's nomenclature, e.g. total_soma_radii, mean_trunk_section_lengths
             neuron_feat_name_stat_mode = dict()
-            for key, val in dict0.items():
+            for key, val in list(dict0.items()):
                 if not any(sub_str in key for sub_str in ['dendrite', 'axon']):
                     neuron_feat_name_stat_mode.update({key: val})
                     del dict0[key]
@@ -101,20 +100,20 @@ class NeuroM_MorphStats(sciunit.Model):
         # (instead of taking the observation file as reference, to keep independence between Model and Test classes)
         with open(morph_stats_config_path, 'r') as fp:
             morph_stats_config_dict = json.load(fp)
-        # print 'morph_stats_config_dict = ', json.dumps(morph_stats_config_dict, sort_keys=True, indent=3)
+        # print('morph_stats_config_dict = ', json.dumps(morph_stats_config_dict, sort_keys=True, indent=3))
 
         neurite_feats_plural = list()
         neuron_feats_plural = list()
-        for key0, dict0 in morph_stats_config_dict.items():
+        for key0, dict0 in list(morph_stats_config_dict.items()):
             if key0 == 'neurite':
                 neurite_feats_plural = [key1 for key1 in dict0.keys() if key1[-1] == 's']
             elif key0 == 'neuron':
                 neuron_feats_plural = [key1 for key1 in dict0.keys() if key1[-1] == 's']
 
-        for cell_ID, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs
-                                                        # for each cell
-            for cell_part, dict1 in dict0.items():
-                for feat_name_stat_mode, value in dict1.items():
+        for cell_ID, dict0 in list(mod_prediction.items()):  # Dict. with cell's morph_path-features dict. pairs
+                                                            # for each cell
+            for cell_part, dict1 in list(dict0.items()):
+                for feat_name_stat_mode, value in list(dict1.items()):
 
                     new_key = ''
                     if 'radii' in feat_name_stat_mode:
@@ -132,7 +131,7 @@ class NeuroM_MorphStats(sciunit.Model):
                             new_key = feat_name_stat_mode + 's'
 
                     if new_key:
-                        # print 'Changing %s -> %s = \n' % (feat_name_stat_mode, new_key)
+                        # print('Changing %s -> %s = \n' % (feat_name_stat_mode, new_key))
                         del dict1[feat_name_stat_mode]
                         dict1.update({new_key: value})
 
@@ -166,9 +165,9 @@ class NeuroM_MorphStats(sciunit.Model):
             morph_files = nm.io.utils.get_morph_files(self.morph_path)
 
         mapping = lambda section: section.points
-        for neurite_name, extra_feat_list in morph_extra_dict.items(): # Dict. with neurite names and
+        for neurite_name, extra_feat_list in list(morph_extra_dict.items()): # Dict. with neurite names and
                                                                         # extra features to be computed
-            for cell_ID, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs
+            for cell_ID, dict0 in list(mod_prediction.items()):  # Dict. with cell's morph_path-features dict. pairs
                                                             # for each cell
 
                 if os.path.isdir(self.morph_path):
@@ -179,7 +178,7 @@ class NeuroM_MorphStats(sciunit.Model):
 
                 neuron_model = nm.load_neuron(neuron_path)
 
-                for cell_part, dict1 in dict0.items():
+                for cell_part, dict1 in list(dict0.items()):
                     if cell_part == neurite_name:
                         neurite_filter = lambda neurite: neurite.type == getattr(nm.NeuriteType, cell_part)
                         neurite_points = [neurite_points for neurite_points in
@@ -239,8 +238,8 @@ class NeuroM_MorphStats(sciunit.Model):
 
             # Adding the right units and converting feature values to strings
             for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part:
-                                            #  neuron, apical_dendrite, basal_dendrite or axon
-                for key, val in dict2.items():
+                                                #  neuron, apical_dendrite, basal_dendrite or axon
+                for key, val in list(dict2.items()):
                     if any(sub_str in key for sub_str in dim_um):
                         dict2[key] = dict(value=str(val) + ' um')
                     else:
@@ -261,9 +260,9 @@ class NeuroM_MorphStats_pop(NeuroM_MorphStats):
     def __init__(self, model_name='NeuroM_MorphStats_pop', morph_path=None, \
                 neuroM_pred_file=None, base_directory='.'):
 
-        super(NeuroM_MorphStats_pop, self).__init__(model_name=model_name, morph_path=morph_path, \
-                                                    neuroM_pred_file=neuroM_pred_file, \
-                                                    base_directory=base_directory)
+        super().__init__(model_name=model_name, morph_path=morph_path, \
+                        neuroM_pred_file=neuroM_pred_file, \
+                        base_directory=base_directory)
         self.description = "A class to interact with a population of morphologies \
                             via the morphometrics-NeuroM's API (morph_stats)"
 
@@ -274,9 +273,9 @@ class NeuroM_MorphStats_pop(NeuroM_MorphStats):
 
         mod_prediction = mod_data
 
-        population_features = copy.deepcopy(mod_prediction.values())[0]
+        population_features = copy.deepcopy(list(mod_prediction.values()))[0]
         population_features_raw = dict.fromkeys(population_features, {})
-        for cell_part, feature_dict in population_features.items():
+        for cell_part, feature_dict in list(population_features.items()):
             feat_dict_raw = {feat_name: [cell_dict[cell_part][feat_name] for cell_dict in mod_prediction.values()]
                              for feat_name in feature_dict.keys()}
             population_features_raw.update({cell_part: feat_dict_raw})

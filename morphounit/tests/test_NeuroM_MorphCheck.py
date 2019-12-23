@@ -47,7 +47,7 @@ class NeuroM_MorphoCheck(sciunit.Test):
 
         # note: observation here is either the contents of the config file or a local path
         # if local path load contents
-        if not isinstance(self.observation, dict):        
+        if not isinstance(self.observation, dict):
             with open(self.observation) as f:
                 self.observation = json.load(f)
         # save morph_check config as local file
@@ -57,7 +57,7 @@ class NeuroM_MorphoCheck(sciunit.Test):
         cut_plane_config = self.observation["cut_plane"]
 
         morhpcheck_output_file = os.path.join(self.path_test_output, "morph_check_output.json")
-        call(shlex.split("morph_check -C {} -o {} {}".format(morph_check_config_file, morhpcheck_output_file, model.morph_path)))
+        call(shlex.split(f"morph_check -C {morph_check_config_file} -o {morhpcheck_output_file} {model.morph_path}"))
         with open(morhpcheck_output_file) as json_data:
             prediction = json.load(json_data)
 

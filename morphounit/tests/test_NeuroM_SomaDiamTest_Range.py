@@ -86,8 +86,8 @@ class NeuroM_SomaDiamTest_Range(sciunit.Test):
 
     def compute_score(self, observation, prediction, verbose=False):
         """Implementation of sciunit.Test.score_prediction."""
-        print "observation = ", observation
-        print "prediction = ", prediction
+        print("observation = ", observation)
+        print("prediction = ", prediction)
         self.score = morphounit.scores.RangeScore.compute(observation["diameter"], prediction["diameter"])
         self.score.description = "score is 0.0 if within range; otherwise difference"
 

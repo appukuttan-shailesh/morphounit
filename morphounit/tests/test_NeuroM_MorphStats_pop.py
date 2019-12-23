@@ -13,7 +13,7 @@ import neurom as nm
 import numpy as np
 import quantities
 
-from test_NeuroM_MorphStats import NeuroM_MorphStats_Test
+from .test_NeuroM_MorphStats import NeuroM_MorphStats_Test
 
 class NeuroM_MorphStats_pop_Test(NeuroM_MorphStats_Test):
     """Tests a set of cell's morphological features in a neuronal population"""
@@ -21,8 +21,7 @@ class NeuroM_MorphStats_pop_Test(NeuroM_MorphStats_Test):
 
     def __init__(self, observation=None, name="NeuroM_MorphStats_pop_Test", base_directory=None):
 
-        super(NeuroM_MorphStats_pop_Test, self).__init__(observation=observation, name=name, \
-                                                        base_directory=base_directory)
+        super().__init__(observation=observation, name=name, base_directory=base_directory)
         self.description = "Tests a set of cell's morpho-features in a population of digitally reconstructed neurons"
         # require_capabilities = (mph_cap.ProvidesMorphFeatureInfo,)
 
@@ -33,7 +32,7 @@ class NeuroM_MorphStats_pop_Test(NeuroM_MorphStats_Test):
 
         # Creates a model prediction file following some NeuroM configuration
         # files for NeuroM, but additional formatting is needed
-        mod_prediction_all = super(NeuroM_MorphStats_pop_Test, self).raw_model_prediction(model=model)
+        mod_prediction_all = super().raw_model_prediction(model=model)
 
         # Collecting raw data from all cells and computing the
         # corresponding the mean morphometrics describing the whole population
@@ -56,10 +55,10 @@ class NeuroM_MorphStats_pop_Test(NeuroM_MorphStats_Test):
         self.prediction = prediction
 
         # Computing the scores
-        cell_t = observation.keys()[0]  # Cell type
+        cell_t = list(observation.keys())[0]  # Cell type
 
         score_cell_dict = dict.fromkeys([key0 for key0 in prediction.keys()], [])
-        obs_features = copy.deepcopy(observation.values())[0]  # only features registered in observation data are tested
+        obs_features = copy.deepcopy(list(observation.values()))[0]  # only features registered in observation data are tested
         score_feat_dict = dict()
         for key0 in prediction:  # cell_ID keys
 

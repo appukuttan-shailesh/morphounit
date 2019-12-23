@@ -77,8 +77,8 @@ class CellDensityTest(sciunit.Test):
 
     def compute_score(self, observation, prediction, verbose=False):
         """Implementation of sciunit.Test.score_prediction."""
-        print "observation = ", observation
-        print "prediction = ", prediction
+        print("observation = ", observation)
+        print("prediction = ", prediction)
         self.score = sciunit.scores.ZScore.compute(observation["density"], prediction["density"])
         self.score.description = "A simple Z-score"
 

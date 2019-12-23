@@ -28,7 +28,7 @@ class FeatsPop_MorphStats:
         into a dictionary of DataFrame structures
         """
         pop_prediction_raw = self.testObj.prediction_cells_dict
-        prediction_raw = pop_prediction_raw.values()[0]
+        prediction_raw = list(pop_prediction_raw.values())[0]
 
         dict_pred_CellPart_df = dict()
         for CellPart in prediction_raw.keys():
@@ -85,7 +85,7 @@ class FeatsPop_MorphStats:
         Linear correlation results are shown below and above the diagonal for
         the same pair of morpho-feattures (i.e., numerical results are symmetric).
         '''
-        for CellPart, prediction_raw_df in dict_pred_CellPart_df.items():
+        for CellPart, prediction_raw_df in list(dict_pred_CellPart_df.items()):
             data = self.df_drop_features(df=prediction_raw_df)
 
             g = sns.pairplot(data, height=5, aspect=1, diag_kind="kde")
@@ -114,7 +114,7 @@ class FeatsPop_MorphStats:
         Note that some morpho-features are excluded from the analysis, when their
         correlation is high , as their (kde) countour-plots can not be computed.
         '''
-        for CellPart, prediction_raw_df in dict_pred_CellPart_df.items():
+        for CellPart, prediction_raw_df in list(dict_pred_CellPart_df.items()):
             data = self.df_drop_features(df=prediction_raw_df)
 
             g = sns.pairplot(data, height=5, aspect=1, diag_kind="kde")

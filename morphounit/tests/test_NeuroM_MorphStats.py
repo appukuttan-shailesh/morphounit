@@ -53,7 +53,7 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         cell_feats_avail = nm.fst.NEURONFEATURES.keys()
 
         # Neurite features available
-        neurite_feats_avail = nm.fst.NEURITEFEATURES.keys()
+        neurite_feats_avail = list(nm.fst.NEURITEFEATURES.keys())
         neurite_feats_extra = ['neurite_field_diameter', 'neurite_largest_extent', 'neurite_shortest_extent',
                                'neurite_X_extent', 'neurite_Y_extent', 'neurite_Z_extent']
         neurite_feats_avail.extend(neurite_feats_extra)
@@ -70,33 +70,32 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
         # print "Checking observation file compliance with NeuroM's ('fst' module) nomenclature..."
         for dict1 in observation.values():  # Dict. with cell's part-features dictionary pairs for each cell
-            for key2, dict2 in dict1.items():  # Dict. with feature name-value pairs for each cell part:
+            for key2, dict2 in list(dict1.items()):  # Dict. with feature name-value pairs for each cell part:
                                                 #  neuron, apical_dendrite, basal_dendrite or axon
                 assert (key2 in neuron_parts_avail), \
-                    "{} is not permitted for neuron parts. Please, use one in the following " \
-                    "list:\n {}".format(key2, neuron_parts_avail)
+                    f"{key2} is not permitted for neuron parts. Please, use one in the following \
+                    list:\n {neuron_parts_avail}"
 
                 for key3 in dict2.keys():
                     feat_name, stat_mode = key3.split('_', 1)[1], key3.split('_', 1)[0]
                     if key2 == 'neuron':
                         # Checking the NeuroM features for the cell
                         assert (feat_name in cell_feats_avail), \
-                            "{} is not permitted for cells. Please, use one in the following list:\n {}" \
-                            .format(feat_name, sorted(cell_feats_avail))
+                            f"{feat_name} is not permitted for cells. Please, use one in the following \
+                            list:\n {sorted(cell_feats_avail)}"
                         # Checking the statistical mode for the cell features
                         assert (stat_mode in stat_modes), \
-                            "{} is not permitted for statistical modes. Please, use one in the following list:\n {}" \
-                            .format(stat_mode, stat_modes)
+                            f"{stat_mode} is not permitted for statistical modes. Please, use one in \
+                            the following list:\n {stat_modes}"
                     elif feat_name in nm.fst.NEURITEFEATURES.keys():
                         assert (stat_mode in stat_modes), \
-                            "{} is not permitted for statistical modes. Please, use one in the following list:\n {}" \
-                            .format(stat_mode, stat_modes)
+                            f"{stat_mode} is not permitted for statistical modes. Please, use one in \
+                            the following \list:\n {stat_modes}"
                     else:
                         # Checking the extra-NeuroM features for Neurites, if any
                         assert (key3 in neurite_feats_extra), \
-                            "{} is not permitted for neurites. Please, use one in the following list:\n {}" \
-                            .format(key3, sorted(neurite_feats_avail))
-        # print 'OK \n'
+                            f"{key3} is not permitted for neurites. Please, use one in the following \
+                            list:\n {sorted(neurite_feats_avail)}"
 
     # ----------------------------------------------------------------------
 
@@ -105,16 +104,16 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         """Prints NeuroM ('fst' module) nomenclature constraints to be followed
         by the user when specifying observation files"""
 
-        print 'Cell parts available:\n', sorted(neuron_parts_avail), '\n'
-        print 'Cell features available:\n', sorted(cell_feats_avail), '\n'
-        print 'Neurite features available:\n', sorted(neurite_feats_avail), '\n'
-        print 'A summary statistics must be indicated for each feature, with the ' \
+        print ('Cell parts available:\n', sorted(neuron_parts_avail), '\n')
+        print ('Cell features available:\n', sorted(cell_feats_avail), '\n')
+        print ('Neurite features available:\n', sorted(neurite_feats_avail), '\n')
+        print ('A summary statistics must be indicated for each feature, with the ' \
               'exception of those contained in the set ', neurite_feats_extra, \
-            '. Statistics modes available: ', stat_modes, '\n'
+            '. Statistics modes available: ', stat_modes, '\n')
         # How to specify feature_name = mode + feature
-        print "To that end, a prefix formed with the stats. mode intended, followed by '_', " \
-              "should be added to the feature name. For instance: 'total_number_of_neurites' \n"
-        print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n\n"
+        print ("To that end, a prefix formed with the stats. mode intended, followed by '_', " \
+              "should be added to the feature name. For instance: 'total_number_of_neurites' \n")
+        print ("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n\n")
 
     # ----------------------------------------------------------------------
 
@@ -236,8 +235,8 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         morph_stats_config_dict.update({'neurite_type': neurite_type_list,
                                         'neurite': feat_name_stat_mode_neurite_dict,
                                         'neuron': feat_name_stat_mode_cell_dict})
-        # print 'Configuration file for morph_stats was completed. \n', \
-        #  json.dumps(morph_stats_config_dict, sort_keys=True, indent=3)
+        # print('Configuration file for morph_stats was completed. \n', \
+        #  json.dumps(morph_stats_config_dict, sort_keys=True, indent=3))
 
         obs_dir = self.path_test_output
         # obs_dir = os.path.dirname(observation_path)
@@ -261,8 +260,8 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         if extra_file_exists:
             os.remove(neuroM_extra_config_path)
         if neurite_feats_extra_dict:
-            # print 'The following morphometrics will be extracted separately and added to the model prediction: \n', \
-            json.dumps(neurite_feats_extra_dict, sort_keys=True, indent=3)
+            # print('The following morphometrics will be extracted separately and added to the model prediction: \n', \
+            # json.dumps(neurite_feats_extra_dict, sort_keys=True, indent=3))
             # Saving NeuroM's configuration extra-file in JSON format
             with open(neuroM_extra_config_path, 'w') as fp:
                 json.dump(neurite_feats_extra_dict, fp, sort_keys=True, indent=3)
@@ -286,9 +285,9 @@ class NeuroM_MorphStats_Test(sciunit.Test):
 
         # Deleting some neurite's morphometrics added by morph_stats, but not present in the observation file
         mod_prediction = copy.deepcopy(mod_prediction_temp)
-        cell_t = self.raw_observation.keys()[0]  # Cell type
-        for cell_ID, cell_dict in mod_prediction_temp.items():
-            for cell_part, cell_part_dict in cell_dict.items():
+        cell_t = list(self.raw_observation.keys())[0]  # Cell type
+        for cell_ID, cell_dict in list(mod_prediction_temp.items()):
+            for cell_part, cell_part_dict in list(cell_dict.items()):
                 for feat_name_stat_mode in cell_part_dict:
                     if cell_part != 'neuron' and feat_name_stat_mode not in self.raw_observation[cell_t][cell_part]:
                         del mod_prediction[cell_ID][cell_part][feat_name_stat_mode]
@@ -327,10 +326,10 @@ class NeuroM_MorphStats_Test(sciunit.Test):
         self.prediction = prediction
 
         # Computing the scores
-        cell_t = observation.keys()[0]  # Cell type
+        cell_t = list(observation.keys())[0]  # Cell type
 
         score_cell_dict = dict.fromkeys([key0 for key0 in prediction.keys()], [])
-        obs_features = copy.deepcopy(observation.values())[0]
+        obs_features = copy.deepcopy(list(observation.values()))[0]
 
         score_feat_dict = dict()
         for key0 in prediction:  # cell_ID keys
