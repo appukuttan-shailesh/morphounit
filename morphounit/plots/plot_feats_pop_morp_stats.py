@@ -39,7 +39,7 @@ class FeatsPop_MorphStats:
     def corrfunc(self, x, y, **kws):
         r, p = stats.pearsonr(x, y)
         ax = plt.gca()
-        ax.annotate(f"r = {:.2E}\n(p ={:.2E})", xy=(.1, .9), xycoords=ax.transAxes)
+        ax.annotate(f"r = {r:.2E}\n(p ={p:.2E})", xy=(.1, .9), xycoords=ax.transAxes)
 
     def df_drop_features(self, df=None, threshold_corr=0.95, threshold_var=0.05):
         '''Drops one in any pair of highly correlated features of a DataFrame,
