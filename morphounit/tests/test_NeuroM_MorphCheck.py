@@ -12,6 +12,7 @@ from datetime import datetime
 import matplotlib.backends.backend_pdf
 from neurom.apps.cut_plane_detection import find_cut_plane
 from neurom import load_neuron
+import numpy
 
 #==============================================================================
 
@@ -57,7 +58,7 @@ class NeuroM_MorphoCheck(sciunit.Test):
         cut_plane_config = self.observation["cut_plane"]
 
         morhpcheck_output_file = os.path.join(self.path_test_output, "morph_check_output.json")
-        call(shlex.split(f"morph_check -C {morph_check_config_file} -o {morhpcheck_output_file} {model.morph_path}"))
+        call(shlex.split("morph_check -C {} -o {} {}".format(morph_check_config_file, morhpcheck_output_file, model.morph_path)))
         with open(morhpcheck_output_file) as json_data:
             prediction = json.load(json_data)
 
@@ -67,14 +68,18 @@ class NeuroM_MorphoCheck(sciunit.Test):
             cut_plane_figure_list.append(cut_plane_output_json["figures"][key][0])
         cutplane_output_pdf = os.path.join(self.path_test_output, "cut_plane_figures.pdf")
         cut_plane_pdf = matplotlib.backends.backend_pdf.PdfPages(cutplane_output_pdf)
-        for fig in xrange(1, len(cut_plane_figure_list)+1):
+        for fig in range(1, len(cut_plane_figure_list)+1):
             cut_plane_pdf.savefig(fig)
         cut_plane_pdf.close()
         cutplane_output_file = os.path.join(self.path_test_output, "cut_plane_output.json")
         cut_plane_output_json.pop("figures")
         cut_plane_output_json["cut_leaves"] = cut_plane_output_json["cut_leaves"].tolist()
+
+        def convert(o):
+            if isinstance(o, numpy.int64): return int(o)
+            raise TypeError
         with open(cutplane_output_file, "w") as outfile:
-            json.dump(cut_plane_output_json, outfile, indent=4)
+            json.dump(cut_plane_output_json, outfile, indent=4, default=convert)
 
         self.figures.append(morhpcheck_output_file)
         self.figures.append(cutplane_output_file)
