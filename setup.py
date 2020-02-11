@@ -11,6 +11,8 @@ setup(
     packages=['morphounit',
               'morphounit.capabilities',
               'morphounit.tests',
+              'morphounit.tests.morph_cells',
+              'morphounit.tests.morph_circuits',
               'morphounit.scores',
               'morphounit.plots'],
     url='https://github.com/appukuttan-shailesh/morphounit',
