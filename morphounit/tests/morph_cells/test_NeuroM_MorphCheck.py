@@ -58,7 +58,7 @@ class NeuroM_MorphoCheck(sciunit.Test):
         cut_plane_config = self.observation["cut_plane"]
 
         morhpcheck_output_file = os.path.join(self.path_test_output, "morph_check_output.json")
-        call(shlex.split("morph_check -C {} -o {} {}".format(morph_check_config_file, morhpcheck_output_file, model.morph_path)))
+        call(shlex.split(f"morph_check -C {morph_check_config_file} -o {morhpcheck_output_file} {model.morph_path}"))
         with open(morhpcheck_output_file) as json_data:
             prediction = json.load(json_data)
 

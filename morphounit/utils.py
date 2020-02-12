@@ -19,6 +19,9 @@ class neuroM_loader(sciunit.Model):
         # self.model = neurom.load_neuron(self.morph_path)
 
 
+# ----------------------------------------------------------------------
+
+
 class NeuroM_MorphStats(sciunit.Model):
     """A class to interact with morphology files via the morphometrics-NeuroM's API (morph_stats)"""
 
@@ -65,19 +68,17 @@ class NeuroM_MorphStats(sciunit.Model):
             os.makedirs(self.morph_stats_output)
 
         try:
-            os.system('morph_stats -C {} -o {} {}'.format(morph_stats_config_path,
-                                                          self.output_pred_file, self.morph_path))
+            os.system(f"morph_stats -C {morph_stats_config_path} -o {self.output_pred_file} {self.morph_path}")
         except IOError:
-            print("Please specify the paths to the morphology directory and configuration file for morph_stats")
+            print("Please specify the path to the morphology directory and configuration file for morph_stats")
 
         with open(self.output_pred_file, 'r') as fp:
             mod_prediction = json.load(fp)
 
         for key0, dict0 in list(mod_prediction.items()):  # Dict. with cell's morph_path-features dict. pairs for each cell
             # Correcting cell's ID, given by some NeuroM versions:
-            # omitting enclosing directory's name and file's extension
+            # omitting enclosing directory's name
             cell_ID = (key0.split("/")[-1])
-            # cell_ID = os.path.splitext(cell_ID)[0]
             del mod_prediction[key0]
             mod_prediction.update({cell_ID: dict0})
 
@@ -103,16 +104,16 @@ class NeuroM_MorphStats(sciunit.Model):
 
         neurite_feats_plural = list()
         neuron_feats_plural = list()
-        for key0, dict0 in morph_stats_config_dict.items():
+        for key0, dict0 in list(morph_stats_config_dict.items()):
             if key0 == 'neurite':
                 neurite_feats_plural = [key1 for key1 in dict0.keys() if key1[-1] == 's']
             elif key0 == 'neuron':
                 neuron_feats_plural = [key1 for key1 in dict0.keys() if key1[-1] == 's']
 
-        for cell_ID, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs
-                                                        # for each cell
-            for cell_part, dict1 in dict0.items():
-                for feat_name_stat_mode, value in dict1.items():
+        for cell_ID, dict0 in list(mod_prediction.items()):  # Dict. with cell's morph_path-features dict. pairs
+                                                            # for each cell
+            for cell_part, dict1 in list(dict0.items()):
+                for feat_name_stat_mode, value in list(dict1.items()):
 
                     new_key = ''
                     if 'radii' in feat_name_stat_mode:
@@ -135,10 +136,10 @@ class NeuroM_MorphStats(sciunit.Model):
                         dict1.update({new_key: value})
 
         # Saving NeuroM's morph_stats output in a formatted json-file
-        with open(self.output_pred_file, 'w') as fp:
-            json.dump(mod_prediction, fp, sort_keys=True, indent=3)
+        # with open(self.output_pred_file, 'w') as fp:
+        #    json.dump(mod_prediction, fp, sort_keys=True, indent=3)
 
-        return self.output_pred_file
+        return mod_prediction
 
     # ----------------------------------------------------------------------
 
@@ -160,18 +161,24 @@ class NeuroM_MorphStats(sciunit.Model):
         with open(self.output_pred_file, 'r') as fp:
             mod_prediction = json.load(fp)
 
+        if os.path.isdir(self.morph_path):
+            morph_files = nm.io.utils.get_morph_files(self.morph_path)
+
         mapping = lambda section: section.points
-        for neurite_name, extra_feat_list in morph_extra_dict.items(): # Dict. with neurite names and
+        for neurite_name, extra_feat_list in list(morph_extra_dict.items()): # Dict. with neurite names and
                                                                         # extra features to be computed
-            for cell_ID, dict0 in mod_prediction.items():  # Dict. with cell's morph_path-features dict. pairs
+            for cell_ID, dict0 in list(mod_prediction.items()):  # Dict. with cell's morph_path-features dict. pairs
                                                             # for each cell
+
                 if os.path.isdir(self.morph_path):
-                    neuron_path = os.path.join(self.morph_path, cell_ID)
+                    morph_file_name = [morph_file for morph_file in morph_files if cell_ID in morph_file]
+                    neuron_path = os.path.join(self.morph_path, os.path.basename(morph_file_name[0]))
                 else:
                     neuron_path = self.morph_path
+
                 neuron_model = nm.load_neuron(neuron_path)
 
-                for cell_part, dict1 in dict0.items():
+                for cell_part, dict1 in list(dict0.items()):
                     if cell_part == neurite_name:
                         neurite_filter = lambda neurite: neurite.type == getattr(nm.NeuriteType, cell_part)
                         neurite_points = [neurite_points for neurite_points in
@@ -213,88 +220,76 @@ class NeuroM_MorphStats(sciunit.Model):
                                 dict1.update({"neurite_field_diameter": neurite_field_diameter})
 
         # Saving NeuroM's output in a formatted json-file
-        with open(self.output_pred_file, 'w') as fp:
-            json.dump(mod_prediction, fp, sort_keys=True, indent=3)
+        # with open(self.output_pred_file, 'w') as fp:
+        #     json.dump(mod_prediction, fp, sort_keys=True, indent=3)
 
-        return
+        return mod_prediction
 
     # ----------------------------------------------------------------------
 
-    def pre_formatting(self):
+    def pre_formatting(self, mod_data=None):
         """Formatting the prediction by adding (non-functional) units (as strings).
         Python package 'quantities' is not used yet, this is implemented in the Test class"""
 
-        with open(self.output_pred_file, 'r') as fp:
-            mod_prediction = json.load(fp)
+        mod_prediction = mod_data
 
         dim_um = ['radii', 'length', 'distance', 'extent']
         for dict1 in mod_prediction.values():  # Set of cell's part-features dictionary pairs for each cell
 
             # Adding the right units and converting feature values to strings
             for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part:
-                                            #  neuron, apical_dendrite, basal_dendrite or axon
-                for key, val in dict2.items():
+                                                #  neuron, apical_dendrite, basal_dendrite or axon
+                for key, val in list(dict2.items()):
                     if any(sub_str in key for sub_str in dim_um):
                         dict2[key] = dict(value=str(val) + ' um')
                     else:
                         dict2[key] = dict(value=str(val))
 
         # Saving NeuroM's output in a formatted json-file
-        with open(self.output_pred_file, 'w') as fp:
-            json.dump(mod_prediction, fp, sort_keys=True, indent=3)
-
-        return
-
-    # ----------------------------------------------------------------------
-
-    def avg_prediction_pop(self):
-        """ Collecting raw data from all cells and computing the corresponding average"""
-
-        mod_prediction = self.set_morph_feature_info()
-
-        population_features = copy.deepcopy(mod_prediction.values())[0]
-        for cell_part, feature_dict in population_features.items():
-            feat_dict_raw = {feat_name: [cell_dict[cell_part][feat_name] for cell_dict in mod_prediction.values()]
-                             for feat_name in feature_dict.keys()}
-            feature_dict.update({feat_name: [np.mean(feat_dict_raw[feat_name]), np.std(feat_dict_raw[feat_name])]
-                                 for feat_name in feature_dict.keys()})
-
-        pop_prediction = dict(pop_mean=population_features)
-
-        return pop_prediction
-
-    # ----------------------------------------------------------------------
-
-    def pre_formatting_pop(self):
-        """Formatting the prediction by adding units and additional labels, e.g. 'mean', 'value', etc
-        Python package 'quantities' is not used yet, this is implemented in the Test class"""
-
-        mod_prediction = self.set_morph_feature_info()
-
-        dim_um = ['radius', 'radii', 'diameter', 'length', 'distance', 'extent']
-        for dict1 in mod_prediction.values():  # Set of cell's part-features dictionary pairs for each cell
-
-            # Adding the right units and converting feature values to strings
-            for dict2 in dict1.values():  # Dict. with feature name-value pairs for each cell part:
-                                            # neuron, apical_dendrite, basal_dendrite or axon
-                for key, val in dict2.items():
-                    if any(sub_str in key for sub_str in ['radius', 'radii']):
-                        del dict2[key]
-                        val[0] *= 2
-                        key = key.replace("radius", "diameter")
-                        key = key.replace("radii", "diameter")
-
-                    if val[1] == 0:  # val[1] is the std, and a zero value is unrealistic
-                        val[1] = 1.0  # To avoid division-by-zero error when computing scores
-                    if any(sub_str in key for sub_str in dim_um):
-                        dict2[key] = dict(mean=str(val[0]) + ' um', std=str(val[1]) + ' um')
-                    else:
-                        dict2[key] = dict(mean=str(val[0]), std=str(val[1]))
-
-        """
-        # Saving NeuroM's morph_stats output in a formatted json-file
-        with open(self.output_file, 'w') as fp:
-            json.dump(mod_prediction, fp, sort_keys=True, indent=3)
-        """
+        # with open(self.output_pred_file, 'w') as fp:
+        #    json.dump(mod_prediction, fp, sort_keys=True, indent=3)
 
         return mod_prediction
+
+
+# ----------------------------------------------------------------------
+
+
+class NeuroM_MorphStats_pop(NeuroM_MorphStats):
+    """A class to interact with a population of morphologies via the morphometrics-NeuroM's API (morph_stats)"""
+    def __init__(self, model_name='NeuroM_MorphStats_pop', morph_path=None, \
+                neuroM_pred_file=None, base_directory='.'):
+
+        super().__init__(model_name=model_name, morph_path=morph_path, \
+                        neuroM_pred_file=neuroM_pred_file, \
+                        base_directory=base_directory)
+        self.description = "A class to interact with a population of morphologies \
+                            via the morphometrics-NeuroM's API (morph_stats)"
+
+    # ----------------------------------------------------------------------
+
+    def avg_prediction(self, mod_data=None):
+        """ Collecting raw data from all cells and computing the corresponding average"""
+
+        mod_prediction = mod_data
+
+        population_features = copy.deepcopy(list(mod_prediction.values()))[0]
+        population_features_raw = dict.fromkeys(population_features, {})
+        for cell_part, feature_dict in list(population_features.items()):
+            feat_dict_raw = {feat_name: [cell_dict[cell_part][feat_name] for cell_dict in mod_prediction.values()]
+                             for feat_name in feature_dict.keys()}
+            population_features_raw.update({cell_part: feat_dict_raw})
+            feature_dict.update({feat_name: np.mean(feat_dict_raw[feat_name])
+                                 for feat_name in feature_dict.keys()})
+
+        pop_avg_prediction = dict(FSI_mean=population_features)
+        pop_cells_prediction = dict(FSI_pop=population_features_raw)
+
+        # print 'pop_avg_prediction = ', json.dumps(pop_avg_prediction, sort_keys=True, indent=3), '\n\n'
+        # print 'pop_cells_prediction = ', json.dumps(pop_cells_prediction, sort_keys=True, indent=3), '\n'
+
+        # Saving NeuroM's average population output in a formatted json-file
+        # with open(self.output_pred_file, 'w') as fp:
+        #    json.dump(pop_avg_prediction, fp, sort_keys=True, indent=3)
+
+        return pop_cells_prediction, pop_avg_prediction

@@ -1,5 +1,6 @@
 import sciunit
 import sciunit.scores
+import morphounit.scores
 import morphounit.capabilities as cap
 import morphounit.plots as plots
 
@@ -13,17 +14,18 @@ import matplotlib.pyplot as plt
 
 #==============================================================================
 
-class NeuroM_SomaDiamTest_MeanSD(sciunit.Test):
+class NeuroM_SomaDiamTest_Range(sciunit.Test):
     """
     Tests the soma diameter for morphologies loaded via NeuroM
-    Compares against Mean, SD; evaluates Z-Score
+    Compares against Min, Max allowed range;
+    Score = True if within range, False otherwise
     """
-    score_type = sciunit.scores.ZScore
-    id = "/tests/8?version=10"
+    score_type = morphounit.scores.RangeScore
+    id = "/tests/7?version=11"
 
     def __init__(self,
                  observation={},
-                 name="NeuroM soma diameter - mean, sd"):
+                 name="NeuroM soma diameter - range"):
         description = ("Tests the soma diameter for morphologies loaded via NeuroM")
         self.units = quantities.um
         required_capabilities = (cap.HandlesNeuroM,)
@@ -40,10 +42,10 @@ class NeuroM_SomaDiamTest_MeanSD(sciunit.Test):
         """
         This accepts data input in the form:
         ***** (observation) *****
-        {"diameter": {"mean": "X0 um", "std": "2.5 um"}}
+        {"diameter": {"min": "X0 um", "max": "2.5 um"}}
         ***** (prediction) *****
         {"diameter": {"value" : "X0 um"}}
-        and splits the values of mean and std to numeric quantities
+        and splits the values of min, max and value to numeric quantities
         and their units (via quantities package).
         """
         for key,val in data["diameter"].items():
@@ -69,7 +71,7 @@ class NeuroM_SomaDiamTest_MeanSD(sciunit.Test):
         except Exception:
             raise sciunit.ObservationError(
                 ("Observation must return a dictionary of the form:"
-                 "{'diameter': {'mean': 'XX um', 'std': 'YY um'}}"))
+                 "{'diameter': {'min': 'XX um', 'max': 'YY um'}}"))
 
     #----------------------------------------------------------------------
 
@@ -84,13 +86,13 @@ class NeuroM_SomaDiamTest_MeanSD(sciunit.Test):
 
     def compute_score(self, observation, prediction, verbose=False):
         """Implementation of sciunit.Test.score_prediction."""
-        print("observation = {}".format(observation))
-        print("prediction = {}".format(prediction))
-        self.score = sciunit.scores.ZScore.compute(observation["diameter"], prediction["diameter"])
-        self.score.description = "A simple Z-score"
+        print("observation = ", observation)
+        print("prediction = ", prediction)
+        self.score = morphounit.scores.RangeScore.compute(observation["diameter"], prediction["diameter"])
+        self.score.description = "score is 0.0 if within range; otherwise difference"
 
         # create output directory
-        self.path_test_output = self.directory_output + 'soma_diameter_mean_sd/' + self.model_name + '/'
+        self.path_test_output = self.directory_output + 'soma_diameter_range/' + self.model_name + '/'
         if not os.path.exists(self.path_test_output):
             os.makedirs(self.path_test_output)
 
@@ -103,10 +105,12 @@ class NeuroM_SomaDiamTest_MeanSD(sciunit.Test):
         err_plot.ylabel = "Diameter (um)"
         file1 = err_plot.create()
         self.figures.append(file1)
+        """
         # 2. Text Table
         txt_table = plots.TxtTable(self)
         file2 = txt_table.create()
         self.figures.append(file2)
+        """
 
         return self.score
 

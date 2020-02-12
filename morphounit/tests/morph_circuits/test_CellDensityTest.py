@@ -1,34 +1,25 @@
 import sciunit
 import sciunit.scores
-import morphounit.scores
 import morphounit.capabilities as cap
 import morphounit.plots as plots
 
 import quantities
 import os
 
-import matplotlib
-# Force matplotlib to not use any Xwindows backend.
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+#===============================================================================
 
-#==============================================================================
-
-class NeuroM_SomaDiamTest_Range(sciunit.Test):
-    """
-    Tests the soma diameter for morphologies loaded via NeuroM
-    Compares against Min, Max allowed range;
-    Score = True if within range, False otherwise
-    """
-    score_type = morphounit.scores.RangeScore
-    id = "/tests/7?version=11"
+class CellDensityTest(sciunit.Test):
+    """Tests the cell density"""
+    score_type = sciunit.scores.ZScore
+    id = "/tests/6?version=7"
 
     def __init__(self,
                  observation={},
-                 name="NeuroM soma diameter - range"):
-        description = ("Tests the soma diameter for morphologies loaded via NeuroM")
-        self.units = quantities.um
-        required_capabilities = (cap.HandlesNeuroM,)
+                 name="Cell Density Test"):
+        description = ("Tests the cell density within a single layer of model")
+        self.units = quantities.UnitQuantity(
+                    '1000/mm3', 1e3/quantities.mm**3, symbol='1000/mm3')
+        required_capabilities = (cap.ProvidesDensityInfo,)
 
         observation = self.format_data(observation)
         self.figures = []
@@ -42,19 +33,20 @@ class NeuroM_SomaDiamTest_Range(sciunit.Test):
         """
         This accepts data input in the form:
         ***** (observation) *****
-        {"diameter": {"min": "X0 um", "max": "2.5 um"}}
+        {"density": {"mean": "XX 1000/mm3", "std": "YY 1000/mm3"}}
         ***** (prediction) *****
-        {"diameter": {"value" : "X0 um"}}
-        and splits the values of min, max and value to numeric quantities
+        {"density": {"value": "ZZ 1000/mm3"}}
+
+        It splits the values of mean, std, value to numeric quantities
         and their units (via quantities package).
         """
-        for key,val in data["diameter"].items():
+        for key,val in data["density"].items():
             try:
                 quantity_parts = val.split(" ")
                 number = float(quantity_parts[0])
                 units_str = " ".join(quantity_parts[1:])
                 assert (units_str == self.units.symbol)
-                data["diameter"][key] = quantities.Quantity(number, self.units)
+                data["density"][key] = quantities.Quantity(number, self.units)
             except AssertionError:
                 raise sciunit.Error("Values not in appropriate format. Required units: ", self.units.symbol)
             except:
@@ -65,20 +57,19 @@ class NeuroM_SomaDiamTest_Range(sciunit.Test):
 
     def validate_observation(self, observation):
         try:
-            for key0 in observation.keys():
-                for key, val in observation["diameter"].items():
-                    assert type(observation["diameter"][key]) is quantities.Quantity
+            for key, val in observation["density"].items():
+                assert type(observation["density"][key]) is quantities.Quantity
         except Exception:
             raise sciunit.ObservationError(
                 ("Observation must return a dictionary of the form:"
-                 "{'diameter': {'min': 'XX um', 'max': 'YY um'}}"))
+                 "{'density': {'mean': 'XX 1000/mm3', 'std': 'YY 1000/mm3'}}"))
 
     #----------------------------------------------------------------------
 
     def generate_prediction(self, model, verbose=False):
         """Implementation of sciunit.Test.generate_prediction."""
         self.model_name = model.name
-        prediction = model.get_soma_diameter_info()
+        prediction = model.get_density_info()
         prediction = self.format_data(prediction)
         return prediction
 
@@ -86,13 +77,13 @@ class NeuroM_SomaDiamTest_Range(sciunit.Test):
 
     def compute_score(self, observation, prediction, verbose=False):
         """Implementation of sciunit.Test.score_prediction."""
-        print("observation = {}".format(observation))
-        print("prediction = {}".format(prediction))
-        self.score = morphounit.scores.RangeScore.compute(observation["diameter"], prediction["diameter"])
-        self.score.description = "score is 0.0 if within range; otherwise difference"
+        print("observation = ", observation)
+        print("prediction = ", prediction)
+        self.score = sciunit.scores.ZScore.compute(observation["density"], prediction["density"])
+        self.score.description = "A simple Z-score"
 
         # create output directory
-        self.path_test_output = self.directory_output + 'soma_diameter_range/' + self.model_name + '/'
+        self.path_test_output = self.directory_output + 'cell_density/' + self.model_name + '/'
         if not os.path.exists(self.path_test_output):
             os.makedirs(self.path_test_output)
 
@@ -101,8 +92,8 @@ class NeuroM_SomaDiamTest_Range(sciunit.Test):
         # create relevant output files
         # 1. Error Plot
         err_plot = plots.ErrorPlot(self)
-        err_plot.xlabels = ["Soma"]
-        err_plot.ylabel = "Diameter (um)"
+        err_plot.xlabels = ["Layer"]
+        err_plot.ylabel = "Cell Density (1000/mm3)"
         file1 = err_plot.create()
         self.figures.append(file1)
         # 2. Text Table
