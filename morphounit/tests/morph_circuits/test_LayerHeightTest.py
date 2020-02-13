@@ -101,6 +101,8 @@ class LayerHeightTest(sciunit.Test):
         for key0 in observation.keys():
             zscores[key0] = sciunit.scores.ZScore.compute(observation[key0]["height"], prediction[key0]["height"]).score
         self.score = morphounit.scores.CombineZScores.compute(zscores.values())
+        self.score_dict = zscores
+        self.score.description = "Mean of absolute Z-scores"
 
         # create output directory
         self.path_test_output = self.directory_output + 'layer_height/' + self.model_name + '/'
@@ -116,6 +118,10 @@ class LayerHeightTest(sciunit.Test):
         err_plot.ylabel = "Layer Height (um)"
         file1 = err_plot.create()
         self.figures.append(file1)
+        # 2. Text Table
+        txt_table = plots.TxtTable(self)
+        file2 = txt_table.create(mid_keys=["height"])
+        self.figures.append(file2)
         """
         # save document with Z-score data
         filename = path_test_output + 'score_summary' + '.txt'
