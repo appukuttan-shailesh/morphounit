@@ -17,7 +17,7 @@ setup(
               'morphounit.plots'],
     url='https://github.com/appukuttan-shailesh/morphounit',
     keywords = ['morphology', 'structure', 'circuit', 'testing', 'validation framework'],
-    license='MIT',
+    license='BSD 3-Clause',
     description='A SciUnit library for data-driven testing of neuronal morphologies.',
     long_description="",
     install_requires=['neo', 'elephant','sciunit>=0.1.5.2', 'neurom==1.4.10', 'tabulate', 'seaborn==0.9.0'],
